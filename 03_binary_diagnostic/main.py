@@ -61,7 +61,24 @@ while len(potential_generator_rating) > 1:
         )
     )
     current_posn += 1
-
+potential_scrubber_rating = input.copy()
+current_posn = 0
+while len(potential_scrubber_rating) > 1:
+    counts = [0, 0]
+    for binary_number in potential_scrubber_rating:
+        counts[int(binary_number[current_posn])] += 1
+    
+    criteria = '1'
+    if counts[0] <= counts[1]:
+        criteria = '0'
+    
+    potential_scrubber_rating = list(
+        filter(
+            lambda binary_number: binary_number[current_posn] == criteria,
+            potential_scrubber_rating
+        )
+    )
+    current_posn += 1
 
 def binary_str_to_int(binary_str):
     binary_array = []
@@ -72,7 +89,9 @@ def binary_str_to_int(binary_str):
 print(potential_generator_rating)
 print(binary_str_to_int(potential_generator_rating[0]))
 generator_rating = binary_str_to_int(potential_generator_rating[0])
+print(potential_scrubber_rating)
+print(binary_str_to_int(potential_scrubber_rating[0]))
+scrubber_rating = binary_str_to_int(potential_scrubber_rating[0])
 
-
-
-print(f"generator_rating={generator_rating}")
+life_support_rating = generator_rating * scrubber_rating
+print(f"generator_rating={generator_rating} scrubber_rating={scrubber_rating} life_support_rating={life_support_rating}")

@@ -88,3 +88,35 @@ def play_bingo(numbers, boards, bingo_cards):
 
 drawn_number, sum=play_bingo(numbers, boards, bingo_cards)
 print(f"drawn_number={drawn_number} sum={sum} score={drawn_number*sum}")
+
+# reset bingo cards
+for i in range(0, len(boards)):
+    for j in range(0, 5):
+        for k in range(0, 5):
+            bingo_cards[i][j][k] = False
+
+def play_until_one(numbers, boards, bingo_cards):
+
+    # put everything into a dictionary for efficiency
+    remaining_players = set()
+    for i in range(0, len(boards)):
+        remaining_players.add(i)
+
+    for drawn_number in numbers:
+        # mark all the boards
+        for i in remaining_players:
+            mark_board(drawn_number, boards[i], bingo_cards[i])
+        
+        # check for winner
+        players_to_remove = []
+        for i in remaining_players:
+            if check_winner(bingo_cards[i]):
+                players_to_remove.append(i)
+        for i in players_to_remove:
+            if len(remaining_players) == 1:
+                return [drawn_number, sum_unmarked(boards[i], bingo_cards[i])]
+            remaining_players.remove(i)
+
+
+drawn_number, sum=play_until_one(numbers, boards, bingo_cards)
+print(f"drawn_number={drawn_number} sum={sum} score={drawn_number*sum}")

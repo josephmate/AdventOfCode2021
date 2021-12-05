@@ -64,3 +64,61 @@ for ((x,y), count) in collisions.items():
 
 print(too_many_collisions)
 
+
+
+def is_diagonal(x1, y1, x2, y2):
+    return abs(x2-x1) == abs(y2-y1)
+
+collisions = {}
+for ((x1, y1),(x2,y2)) in input:
+    if x1 == x2:
+        if y1 <= y2:
+            lower_y = y1
+            bigger_y = y2
+        else:
+            lower_y = y2
+            bigger_y = y1
+
+        for i in range(lower_y, bigger_y+1):
+            collisions[(x1, i)] = collisions.get((x1, i), 0) + 1
+    elif y1 == y2:
+        if x1 <= x2:
+            lower_x = x1
+            bigger_x = x2
+        else:
+            lower_x = x2
+            bigger_x = x1
+        for i in range(lower_x, bigger_x+1):
+            collisions[(i, y1)] = collisions.get((i, y1), 0) + 1
+    elif is_diagonal(x1, y1, x2, y2):
+        if x1 <= x2:
+            start_x = x1
+            end_x = x2
+            start_y = y1
+            end_y = y2
+        else:
+            start_x = x2
+            end_x = x1
+            start_y = y2
+            end_y = y1
+        
+        if end_y >= start_y:
+            for i in range(0, (end_x-start_x)+1):
+                coord = (start_x+i, start_y+i)
+                collisions[coord] = collisions.get(coord, 0) + 1
+        else:
+            for i in range(0, (end_x-start_x)+1):
+                coord = (start_x+i, start_y-i)
+                collisions[coord] = collisions.get(coord, 0) + 1
+        
+
+print_collisions(collisions)
+
+print(collisions)
+
+too_many_collisions = 0
+for ((x,y), count) in collisions.items():
+    if (count >= 2):
+        too_many_collisions += 1
+
+print(too_many_collisions)

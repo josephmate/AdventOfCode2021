@@ -24,18 +24,21 @@ for fish_timer in input:
     fish_timers[fish_timer] += 1
 print(fish_timers)
 
+def solve(days, fish_timers):
+    for day in range(1, days+1):
+        new_fish_timers = []
+        for i in range(0, 8+1):
+            new_fish_timers.append(0)
+        
+        for i in range(1, 8+1):
+            new_fish_timers[i-1] = fish_timers[i]
+        
+        new_fish_timers[8] = fish_timers[0]
+        new_fish_timers[6] += fish_timers[0]
 
-for day in range(1, 80+1):
-    new_fish_timers = []
-    for i in range(0, 8+1):
-        new_fish_timers.append(0)
-    
-    for i in range(1, 8+1):
-        new_fish_timers[i-1] = fish_timers[i]
-    
-    new_fish_timers[8] = fish_timers[0]
-    new_fish_timers[6] += fish_timers[0]
+        fish_timers = new_fish_timers
 
-    fish_timers = new_fish_timers
+    print(sum(fish_timers))
 
-print(sum(fish_timers))
+solve(80, fish_timers.copy())
+solve(256, fish_timers.copy())

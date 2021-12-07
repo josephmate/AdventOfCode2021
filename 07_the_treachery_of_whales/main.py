@@ -15,3 +15,21 @@ input = list (
     )
 )
 print(input)
+
+min_posn = min(input)
+max_posn = max(input)
+
+def calc_fuel(target_posn, posns) :
+    sum = 0
+    for posn in posns:
+        sum += abs(posn - target_posn)
+    return sum
+
+min_fuel = 1000000000
+target_posn = -1
+for posn in range(min_posn, max_posn+1):
+    fuel = calc_fuel(posn, input)
+    if fuel < min_fuel:
+        min_fuel = fuel
+        target_posn = posn
+print(f"min_fuel={min_fuel} target_posn={target_posn}")

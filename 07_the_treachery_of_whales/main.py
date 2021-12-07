@@ -35,11 +35,21 @@ for posn in range(min_posn, max_posn+1):
 print(f"min_fuel={min_fuel} target_posn={target_posn}")
 
 def calc_movement(posn, target_posn):
+    # odd
+    # 1 2 3 4 5
+    # 6 6 3
+    # (delta + 1)*delta/2 + (delta+1)/2
+    # even
+    # 1 2 3 4 5 6
+    # 7 7 7
+    # 3*7
+    # (delta + 1)*delta/2
     delta = abs(posn - target_posn)
-    sum = 0
-    for i in range(1, delta+1):
-        sum += i
-    return sum
+    if delta % 2 == 0:
+        return (delta +1)*delta//2
+    else:
+        return (delta +1)*delta//2 + (delta+1)//2
+
 
 def calc_expensive_fuel(target_posn, posns) :
     sum = 0

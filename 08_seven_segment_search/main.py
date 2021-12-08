@@ -74,6 +74,15 @@ def perm3(l):
         [l[2], l[0], l[1]],
         [l[2], l[1], l[0]],
     ]
+
+def print_unfixed(solution):
+    copy = solution.copy()
+    del copy[8]
+    del copy[7]
+    del copy[4]
+    del copy[1]
+    print(copy)
+
 # int -> string
 def is_valid(solution):
     solution_with_sets = []
@@ -86,22 +95,23 @@ def is_valid(solution):
             expected_intersect_size = len(seven_segment_display[i].intersection(seven_segment_display[j]))
             actual_intersection_size = len(solution_with_sets[i].intersection(solution_with_sets[j]))
             if expected_intersect_size != actual_intersection_size:
-                print(solution)
                 print("counter example")
+                print_unfixed(solution)
                 print(f"{i} {j} expected {expected_intersect_size} actual {actual_intersection_size}")
                 return False
             
     return True
 
-def sum_displays(solution, displays):
+def concat_displays(solution, displays):
     print(solution)
     print(displays)
     soln_inv = {}
     for (num, signal) in solution.items():
-        soln_inv[signal] = num
-    sum = 0
+        soln_inv[frozenset(signal)] = num
+    print(soln_inv)
+    sum = ""
     for display in displays:
-        sum += soln_inv[display]
+        sum += str(soln_inv[frozenset(display)])
     return sum
 
 def solve_display(signals, displays):
@@ -175,7 +185,7 @@ def solve_display(signals, displays):
     print(signals_by_length)
 
     for potential_len_six_soln in perm3(signals_by_length[6]):
-        for potential_len_five_soln in perm3(signals_by_length[6]):
+        for potential_len_five_soln in perm3(signals_by_length[5]):
             solution[0] = potential_len_six_soln[0]
             solution[6] = potential_len_six_soln[1]
             solution[9] = potential_len_six_soln[2]
@@ -183,7 +193,7 @@ def solve_display(signals, displays):
             solution[3] = potential_len_five_soln[1]
             solution[5] = potential_len_five_soln[2]
             if is_valid(solution):
-                return sum_displays(solution, displays)
+                return int(concat_displays(solution, displays))
 
     return 0
 

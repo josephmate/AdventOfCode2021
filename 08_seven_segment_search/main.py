@@ -64,6 +64,46 @@ def not_done(num_to_signals) :
             return False
     return True
 
+# returns all permutations of a list of length 3
+def perm3(l):
+    return [
+        [l[0], l[1], l[2]],
+        [l[0], l[2], l[1]],
+        [l[1], l[0], l[2]],
+        [l[1], l[2], l[0]],
+        [l[2], l[0], l[1]],
+        [l[2], l[1], l[0]],
+    ]
+# int -> string
+def is_valid(solution):
+    solution_with_sets = []
+    for i in range(0, 10):
+        # string -> iterable of characters to set of characters
+        solution_with_sets.append(set(solution[i]))
+    
+    for i in range(0, 10):
+        for j in range(0, 10):
+            expected_intersect_size = len(seven_segment_display[i].intersection(seven_segment_display[j]))
+            actual_intersection_size = len(solution_with_sets[i].intersection(solution_with_sets[j]))
+            if expected_intersect_size != actual_intersection_size:
+                print(solution)
+                print("counter example")
+                print(f"{i} {j} expected {expected_intersect_size} actual {actual_intersection_size}")
+                return False
+            
+    return True
+
+def sum_displays(solution, displays):
+    print(solution)
+    print(displays)
+    soln_inv = {}
+    for (num, signal) in solution.items():
+        soln_inv[signal] = num
+    sum = 0
+    for display in displays:
+        sum += soln_inv[display]
+    return sum
+
 def solve_display(signals, displays):
     signals_to_num = {}
     for signal in signals:
@@ -87,10 +127,15 @@ def solve_display(signals, displays):
     for (count, options) in group_by_num_of_segments.items():
         group_by_num_of_segments_set[count] = set(options)
 
+    solution = {}
     # solve the easy cases
     for signal in signals:
         if len(group_by_num_of_segments[len(signal)]) == 1:
             matched_val = group_by_num_of_segments[len(signal)][0]
+
+            # update solution
+            solution[matched_val] = signal
+
             set_to_clear = signals_to_num[frozenset(signal)]
             # update signals_to_num
             for i in range(0, 10):
@@ -118,7 +163,27 @@ def solve_display(signals, displays):
     print_signals_to_num(signals_to_num)
     print_num_to_signals(num_to_signals)
     print("\n".join(map(lambda pair: str(pair), group_by_num_of_segments_set.items())))
-        
+    print(solution)
+
+    # can't come up with a better way so I will try 3! * 3!
+    signals_by_length = {}
+    for signal in signals:
+        if len(signal) in signals_by_length:
+            signals_by_length[len(signal)].append(signal)
+        else:
+            signals_by_length[len(signal)] = [signal]
+    print(signals_by_length)
+
+    for potential_len_six_soln in perm3(signals_by_length[6]):
+        for potential_len_five_soln in perm3(signals_by_length[6]):
+            solution[0] = potential_len_six_soln[0]
+            solution[6] = potential_len_six_soln[1]
+            solution[9] = potential_len_six_soln[2]
+            solution[2] = potential_len_five_soln[0]
+            solution[3] = potential_len_five_soln[1]
+            solution[5] = potential_len_five_soln[2]
+            if is_valid(solution):
+                return sum_displays(solution, displays)
 
     return 0
 

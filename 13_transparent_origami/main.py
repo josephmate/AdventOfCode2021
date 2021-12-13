@@ -109,3 +109,8 @@ print_coords_set(coords_set)
 
 print("sample.txt 17")
 print(len(coords_set))
+
+coords_set = set(coords)
+for fold in folds:
+    apply_fold(coords_set, fold)
+print_coords_set(coords_set)

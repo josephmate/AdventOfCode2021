@@ -78,14 +78,14 @@ print(f"{max_freq} - {min_freq} = {diff}")
 
 
 def make_polymer_tracker(polymer):
-    first_char = polymer[0]
+    first_char = prev_char = polymer[0]
     last_char = polymer[len(polymer)-1]
     polymer_map = {}
     for c in polymer:
         second_char = c
-        pair = first_char + second_char
+        pair = prev_char + second_char
         polymer_map[pair] = polymer_map.get(pair, 0) + 1
-        first_char = second_char
+        prev_char = second_char
     # first char and last char are not double counted
     # so the need to be added back or something.
     # I haven't figured out but I'm pretty sure they need
@@ -97,12 +97,22 @@ def apply_rules_fast(polymer_map, insertion_rules):
     return polymer_map
 
 def count_polymer_map(first_char, last_char, polymer_map):
+    print(first_char)
+    print(last_char)
     count = {}
     for (pair, freq) in polymer_map.items():
         count[pair[0]] = count.get(pair[0], 0) + freq
         count[pair[1]] = count.get(pair[1], 0) + freq
     
-    return count
+    count[first_char] = count[first_char] - 1
+    count[last_char] = count[last_char] - 1
+
+    final_count = {}
+    for (c, freq) in count.items():
+        final_count[c] = freq // 2
+    final_count[first_char] = final_count[first_char] + 1
+    final_count[last_char] = final_count[last_char] + 1
+    return final_count
 
 # try part 1 again but more efficiently
 (first_char, last_char, polymer_map) = make_polymer_tracker(polymer_template)

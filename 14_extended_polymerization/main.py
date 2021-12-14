@@ -81,8 +81,8 @@ def make_polymer_tracker(polymer):
     first_char = prev_char = polymer[0]
     last_char = polymer[len(polymer)-1]
     polymer_map = {}
-    for c in polymer:
-        second_char = c
+    for i in range(1, len(polymer)):
+        second_char = polymer[i]
         pair = prev_char + second_char
         polymer_map[pair] = polymer_map.get(pair, 0) + 1
         prev_char = second_char
@@ -107,12 +107,21 @@ def apply_rules_fast(polymer_map, insertion_rules_map):
 
     return new_polyer_map
 
+# N N C B
+#
+# N N -> 1
+# N C -> 1
+# C B -> 1
+#
+# N -> 3
+# C -> 2
+# B -> 1
 def count_polymer_map(first_char, last_char, polymer_map):
     count = {}
     for (pair, freq) in polymer_map.items():
         count[pair[0]] = count.get(pair[0], 0) + freq
         count[pair[1]] = count.get(pair[1], 0) + freq
-    
+
     count[first_char] = count[first_char] - 1
     count[last_char] = count[last_char] - 1
 
@@ -145,9 +154,23 @@ print(f"Expected: {count_freq('NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB
 print(f"Actual:   {count_polymer_map(first_char, last_char, polymer_map)}")
 print()
 
-polymer = polymer_template
+def min_max_freq_fast(first_char, last_char, polymer_map):
+    counts = count_polymer_map(first_char, last_char, polymer_map)
+    min_freq = min(counts.values())
+    max_freq = max(counts.values())
+    diff = max_freq - min_freq
+    return (diff, max_freq, min_freq)
+
+(first_char, last_char, polymer_map) = make_polymer_tracker(polymer_template)
 for step in range(1, 10+1):
-    polymer = apply_rules(polymer, insertion_rules_map)
-(diff, max_freq, min_freq) = min_max_freq(polymer)
+    polymer_map = apply_rules_fast(polymer_map, insertion_rules_map)
+(diff, max_freq, min_freq) = min_max_freq_fast(first_char, last_char, polymer_map)
 print("1749 - 161 = 1588")
+print(f"{max_freq} - {min_freq} = {diff}")
+
+(first_char, last_char, polymer_map) = make_polymer_tracker(polymer_template)
+for step in range(1, 40+1):
+    polymer_map = apply_rules_fast(polymer_map, insertion_rules_map)
+(diff, max_freq, min_freq) = min_max_freq_fast(first_char, last_char, polymer_map)
+print("2192039569602 - 3849876073 = 2188189693529")
 print(f"{max_freq} - {min_freq} = {diff}")

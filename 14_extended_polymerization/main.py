@@ -23,11 +23,6 @@ insertion_rules = list(
 print(polymer_template)
 print(insertion_rules)
 
-print("""
-After step 2: NBCCNBBBCBHCB
-After step 3: NBBBCNCCNBBNBNBBCHBHHBCHB
-After step 4: NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB
-""")
 
 def apply_rules(polymer, insertion_rules_map):
     buffer = [polymer[0]]
@@ -61,28 +56,74 @@ polymer = apply_rules(polymer, insertion_rules_map)
 print( "Expected: NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB")
 print(f"Actual:   {polymer}")
 
+def count_freq(polymer):
+    counts = {}
+    for c in polymer:
+        counts[c] = counts.get(c, 0) + 1
+    return counts
+
+def min_max_freq(polymer):
+    counts = count_freq(polymer)
+    min_freq = min(counts.values())
+    max_freq = max(counts.values())
+    diff = max_freq - min_freq
+    return (diff, max_freq, min_freq)
+
 polymer = polymer_template
 for step in range(1, 10+1):
     polymer = apply_rules(polymer, insertion_rules_map)
-counts = {}
-for c in polymer:
-    counts[c] = counts.get(c, 0) + 1
-min_freq = min(counts.values())
-max_freq = max(counts.values())
-diff = max_freq - min_freq
+(diff, max_freq, min_freq) = min_max_freq(polymer)
 print("1749 - 161 = 1588")
 print(f"{max_freq} - {min_freq} = {diff}")
 
 
-polymer = polymer_template
-for step in range(1, 40+1):
-    polymer = apply_rules(polymer, insertion_rules_map)
-counts = {}
-for c in polymer:
-    counts[c] = counts.get(c, 0) + 1
-min_freq = min(counts.values())
-max_freq = max(counts.values())
-diff = max_freq - min_freq
-print("2192039569602 - 3849876073 = 2188189693529")
-print(f"{max_freq} - {min_freq} = {diff}")
+def make_polymer_tracker(polymer):
+    first_char = polymer[0]
+    last_char = polymer[len(polymer)-1]
+    polymer_map = {}
+    for c in polymer:
+        second_char = c
+        pair = first_char + second_char
+        polymer_map[pair] = polymer_map.get(pair, 0) + 1
+        first_char = second_char
+    # first char and last char are not double counted
+    # so the need to be added back or something.
+    # I haven't figured out but I'm pretty sure they need
+    # to be handled separately
+    return (first_char, last_char, polymer_map)
 
+def apply_rules_fast(polymer_map, insertion_rules):
+    # TODO
+    return polymer_map
+
+def count_polymer_map(first_char, last_char, polymer_map):
+    count = {}
+    for (pair, freq) in polymer_map.items():
+        count[pair[0]] = count.get(pair[0], 0) + freq
+        count[pair[1]] = count.get(pair[1], 0) + freq
+    
+    return count
+
+# try part 1 again but more efficiently
+(first_char, last_char, polymer_map) = make_polymer_tracker(polymer_template)
+print(f"Expected: {count_freq('NNCB')}")
+print(f"Actual:   {count_polymer_map(first_char, last_char, polymer_map)}")
+polymer_map = apply_rules_fast(polymer_map, insertion_rules_map)
+print(f"Expected: {count_freq('NCNBCHB')}")
+print(f"Actual:   {count_polymer_map(first_char, last_char, polymer_map)}")
+polymer_map = apply_rules_fast(polymer_map, insertion_rules_map)
+print(f"Expected: {count_freq('NBCCNBBBCBHCB')}")
+print(f"Actual:   {count_polymer_map(first_char, last_char, polymer_map)}")
+polymer_map = apply_rules_fast(polymer_map, insertion_rules_map)
+print(f"Expected: {count_freq('NBBBCNCCNBBNBNBBCHBHHBCHB')}")
+print(f"Actual:   {count_polymer_map(first_char, last_char, polymer_map)}")
+polymer_map = apply_rules_fast(polymer_map, insertion_rules_map)
+print(f"Expected: {count_freq('NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB')}")
+print(f"Actual:   {count_polymer_map(first_char, last_char, polymer_map)}")
+
+polymer = polymer_template
+for step in range(1, 10+1):
+    polymer = apply_rules(polymer, insertion_rules_map)
+(diff, max_freq, min_freq) = min_max_freq(polymer)
+print("1749 - 161 = 1588")
+print(f"{max_freq} - {min_freq} = {diff}")

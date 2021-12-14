@@ -64,7 +64,6 @@ print(f"Actual:   {polymer}")
 polymer = polymer_template
 for step in range(1, 10+1):
     polymer = apply_rules(polymer, insertion_rules_map)
-
 counts = {}
 for c in polymer:
     counts[c] = counts.get(c, 0) + 1
@@ -72,5 +71,18 @@ min_freq = min(counts.values())
 max_freq = max(counts.values())
 diff = max_freq - min_freq
 print("1749 - 161 = 1588")
+print(f"{max_freq} - {min_freq} = {diff}")
+
+
+polymer = polymer_template
+for step in range(1, 40+1):
+    polymer = apply_rules(polymer, insertion_rules_map)
+counts = {}
+for c in polymer:
+    counts[c] = counts.get(c, 0) + 1
+min_freq = min(counts.values())
+max_freq = max(counts.values())
+diff = max_freq - min_freq
+print("2192039569602 - 3849876073 = 2188189693529")
 print(f"{max_freq} - {min_freq} = {diff}")
 

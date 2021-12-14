@@ -92,13 +92,22 @@ def make_polymer_tracker(polymer):
     # to be handled separately
     return (first_char, last_char, polymer_map)
 
-def apply_rules_fast(polymer_map, insertion_rules):
-    # TODO
-    return polymer_map
+def apply_rules_fast(polymer_map, insertion_rules_map):
+    new_polyer_map = {}
+
+    for (pair, freq) in polymer_map.items():
+        if pair in insertion_rules_map:
+            new_char = insertion_rules_map[pair]
+            new_pair1 = pair[0] + new_char
+            new_pair2 = new_char + pair[1]
+            new_polyer_map[new_pair1] = new_polyer_map.get(new_pair1, 0) + freq
+            new_polyer_map[new_pair2] = new_polyer_map.get(new_pair2, 0) + freq
+        else:
+            new_polyer_map[pair] = freq
+
+    return new_polyer_map
 
 def count_polymer_map(first_char, last_char, polymer_map):
-    print(first_char)
-    print(last_char)
     count = {}
     for (pair, freq) in polymer_map.items():
         count[pair[0]] = count.get(pair[0], 0) + freq
@@ -118,18 +127,23 @@ def count_polymer_map(first_char, last_char, polymer_map):
 (first_char, last_char, polymer_map) = make_polymer_tracker(polymer_template)
 print(f"Expected: {count_freq('NNCB')}")
 print(f"Actual:   {count_polymer_map(first_char, last_char, polymer_map)}")
+print()
 polymer_map = apply_rules_fast(polymer_map, insertion_rules_map)
 print(f"Expected: {count_freq('NCNBCHB')}")
 print(f"Actual:   {count_polymer_map(first_char, last_char, polymer_map)}")
+print()
 polymer_map = apply_rules_fast(polymer_map, insertion_rules_map)
 print(f"Expected: {count_freq('NBCCNBBBCBHCB')}")
 print(f"Actual:   {count_polymer_map(first_char, last_char, polymer_map)}")
+print()
 polymer_map = apply_rules_fast(polymer_map, insertion_rules_map)
 print(f"Expected: {count_freq('NBBBCNCCNBBNBNBBCHBHHBCHB')}")
 print(f"Actual:   {count_polymer_map(first_char, last_char, polymer_map)}")
+print()
 polymer_map = apply_rules_fast(polymer_map, insertion_rules_map)
 print(f"Expected: {count_freq('NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB')}")
 print(f"Actual:   {count_polymer_map(first_char, last_char, polymer_map)}")
+print()
 
 polymer = polymer_template
 for step in range(1, 10+1):

@@ -62,7 +62,7 @@ queue.put((0,0,0, [(0,0)]))
 while not queue.empty():
     (r,c,risk,path) = queue.get()
     for (next_r,next_c) in get_next_moves(r,c):
-        next_risk = risk + input[r][c]
+        next_risk = risk + input[next_r][next_c]
         if next_risk < shortest_paths.get((next_r,next_c), max_distance):
             shortest_paths[(next_r,next_c)] = next_risk
             next_path = path.copy()

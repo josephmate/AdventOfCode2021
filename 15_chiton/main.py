@@ -64,15 +64,15 @@ def solve(risk_map):
     shortest_paths = {
         (0,0): 0
     }
-    queue = Queue()
-    queue.put((0,0,0))
+    queue = PriorityQueue()
+    queue.put((0, (0,0)))
     while not queue.empty():
-        (r,c,risk) = queue.get()
+        (risk, (r,c)) = queue.get()
         for (next_r,next_c) in get_next_moves(r,c, num_rows, num_cols):
             next_risk = risk + risk_map[next_r][next_c]
             if next_risk < shortest_paths.get((next_r,next_c), max_distance):
                 shortest_paths[(next_r,next_c)] = next_risk
-                queue.put((next_r,next_c,next_risk))
+                queue.put((next_risk, (next_r,next_c)))
     return shortest_paths[(num_rows-1,num_cols-1)]
 
 def print_path(risk_map, path):

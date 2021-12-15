@@ -64,22 +64,16 @@ def solve(risk_map):
     shortest_paths = {
         (0,0): 0
     }
-    paths = {
-        (0,0): [(0,0)]
-    }
     queue = Queue()
-    queue.put((0,0,0, [(0,0)]))
+    queue.put((0,0,0))
     while not queue.empty():
-        (r,c,risk,path) = queue.get()
+        (r,c,risk) = queue.get()
         for (next_r,next_c) in get_next_moves(r,c, num_rows, num_cols):
             next_risk = risk + risk_map[next_r][next_c]
             if next_risk < shortest_paths.get((next_r,next_c), max_distance):
                 shortest_paths[(next_r,next_c)] = next_risk
-                next_path = path.copy()
-                next_path.append((next_r,next_c))
-                paths[(next_r,next_c)] = next_path
-                queue.put((next_r,next_c,next_risk,next_path))
-    return (shortest_paths[(num_rows-1,num_cols-1)], paths[(num_rows-1,num_cols-1)])
+                queue.put((next_r,next_c,next_risk))
+    return shortest_paths[(num_rows-1,num_cols-1)]
 
 def print_path(risk_map, path):
     num_rows = len(risk_map)
@@ -93,15 +87,11 @@ def print_path(risk_map, path):
                 print(" " + str(risk_map[r][c]), end="")
         print("")
 
-(smallest_risk, shortest_path) = solve(input)
-print_path(input, shortest_path)
+smallest_risk = solve(input)
+#(smallest_risk, shortest_path) = solve(input)
+#print_path(input, shortest_path)
 print("sample.txt 40")
 print(smallest_risk)
-
-manual_cost = -input[0][0]
-for (r,c) in shortest_path:
-    manual_cost += input[r][c]
-print(manual_cost)
 
 bigger_risk_map = []
 for r_tile in range(0,5):
@@ -119,7 +109,8 @@ print_risk_map(bigger_risk_map)
 num_rows = len(bigger_risk_map)
 num_cols = len(bigger_risk_map[0]) # all rows have same length
 print(f"num_rows={num_rows} num_cols={num_cols}")
-(smallest_risk, shortest_path) = solve(bigger_risk_map)
-print_path(bigger_risk_map, shortest_path)
+smallest_risk = solve(bigger_risk_map)
+#(smallest_risk, shortest_path) = solve(bigger_risk_map)
+#print_path(bigger_risk_map, shortest_path)
 print("sample.txt 315")
 print(smallest_risk)

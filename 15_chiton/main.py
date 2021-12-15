@@ -54,15 +54,39 @@ max_distance = num_rows*num_cols*10
 shortest_paths = {
     (0,0): 0
 }
+paths = {
+    (0,0): [(0,0)]
+}
 queue = Queue()
-queue.put((0,0,0))
+queue.put((0,0,0, [(0,0)]))
 while not queue.empty():
-    (r,c,risk) = queue.get()
+    (r,c,risk,path) = queue.get()
     for (next_r,next_c) in get_next_moves(r,c):
         next_risk = risk + input[r][c]
         if next_risk < shortest_paths.get((next_r,next_c), max_distance):
             shortest_paths[(next_r,next_c)] = next_risk
-            queue.put((next_r,next_c,next_risk))
+            next_path = path.copy()
+            next_path.append((next_r,next_c))
+            paths[(next_r,next_c)] = next_path
+            queue.put((next_r,next_c,next_risk,next_path))
 
 print("sample.txt 40")
+print(paths[(num_rows-1,num_cols-1)])
+
+def print_path(path):
+    path_set = set(path)
+    for r in range(0, num_rows):
+        for c in range(0, num_cols):
+            if (r,c) in path_set:
+                print(">" + str(input[r][c]), end="")
+            else:
+                print(" " + str(input[r][c]), end="")
+        print("")
+
+print_path(paths[(num_rows-1,num_cols-1)])
 print(shortest_paths[(num_rows-1,num_cols-1)])
+
+manual_cost = -input[0][0]
+for (r,c) in path:
+    manual_cost += input[r][c]
+print(manual_cost)

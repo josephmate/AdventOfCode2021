@@ -81,3 +81,26 @@ print("")
 print_trajectory(sample[0], sample[1], sample[2], sample[3], 
     simulate(17, -4, sample[0], sample[1], sample[2], sample[3]))
 print("")
+
+def hit(trajectory, x1, x2, y1, y2):
+    for (x,y) in trajectory:
+        if x >= x1 and x <= x2 and y <= y2 and y >= y1:
+            return True
+    return False
+
+def find_highest(x1, x2, y1, y2):
+    highest = 0
+    for x in range(0, x2+1):
+        for y in range(0, abs(y1)+1):
+            trajectory = simulate(x,y, x1,x2,y1,y2)
+            if hit(trajectory, x1,x2,y1,y2):
+                current_max_height = max(map(lambda xy: xy[1], trajectory))
+                if current_max_height > highest:
+                    highest = current_max_height
+    return highest
+
+print(hit(simulate(7, 2, sample[0], sample[1], sample[2], sample[3]), sample[0], sample[1], sample[2], sample[3]))
+print("45")
+print(find_highest(sample[0], sample[1], sample[2], sample[3]))
+print("")
+print(find_highest(input[0], input[1], input[2], input[3]))

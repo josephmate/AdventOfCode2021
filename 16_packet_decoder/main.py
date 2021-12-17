@@ -3,12 +3,15 @@ import re
 from queue import PriorityQueue
 from queue import LifoQueue as Stack
 from queue import Queue
+import math
 
 input = list(
     map(lambda line : line.rstrip(),
     sys.stdin.readlines()
     ))
 hex = input[0]
+
+DEBUG = False
 
 decode_map = {
     "0": "0000",
@@ -106,13 +109,14 @@ def process_packet(binary_packet, index, end, times, tabs):
 
     current_times = 0
     while index+6 < end and current_times < times:
-        print(f"{tab(tabs)} index={index} version={binary_packet[index:index+3]}")
+        if DEBUG:
+            print(f"{tab(tabs)} index={index} version={binary_packet[index:index+3]}")
         version = binary_to_int(binary_packet[index:index+3])
         index += 3
         type = binary_to_int(binary_packet[index:index+3])
         index += 3
-
-        print(f"{tab(tabs)}{version} {type}")
+        if DEBUG:
+            print(f"{tab(tabs)}{version} {type}")
 
         if type == 4: # literal
             (index, packet) = process_literal(binary_packet, index)
@@ -171,3 +175,79 @@ print("31")
 print("")
 print(decode(hex))
 print(count_version_num(decode(hex)))
+
+
+def evaluate_impl(packet):
+    (version, type, data) = packet
+    if type == 4: # literal
+        return data
+    else:
+        (_, sub_packets) = data
+        #Packets with type ID 0 are sum packets - their value is the sum of the values of their sub-packets. If they only have a single sub-packet, their value is the value of the sub-packet.
+        if type == 0:
+            return sum(map(lambda sub_packet: evaluate_impl(sub_packet), sub_packets))
+        #Packets with type ID 1 are product packets - their value is the result of multiplying together the values of their sub-packets. If they only have a single sub-packet, their value is the value of the sub-packet.
+        elif type == 1:
+            return math.prod(map(lambda sub_packet: evaluate_impl(sub_packet), sub_packets))
+        #Packets with type ID 2 are minimum packets - their value is the minimum of the values of their sub-packets.
+        elif type == 2:
+            return min(map(lambda sub_packet: evaluate_impl(sub_packet), sub_packets))
+        #Packets with type ID 3 are maximum packets - their value is the maximum of the values of their sub-packets.
+        elif type == 3:
+            return max(map(lambda sub_packet: evaluate_impl(sub_packet), sub_packets))
+        else:
+            sub_packets = list(map(lambda sub_packet: evaluate_impl(sub_packet), sub_packets))
+            #Packets with type ID 5 are greater than packets - their value is 1 if the value of the first sub-packet is greater than the value of the second sub-packet; otherwise, their value is 0. These packets always have exactly two sub-packets.
+            if type == 5:
+                if sub_packets[0] > sub_packets[1]:
+                    return 1
+                else:
+                    return 0
+            #Packets with type ID 6 are less than packets - their value is 1 if the value of the first sub-packet is less than the value of the second sub-packet; otherwise, their value is 0. These packets always have exactly two sub-packets.
+            elif type == 6:
+                if sub_packets[0] < sub_packets[1]:
+                    return 1
+                else:
+                    return 0
+            #Packets with type ID 7 are equal to packets - their value is 1 if the value of the first sub-packet is equal to the value of the second sub-packet; otherwise, their value is 0. These packets always have exactly two sub-packets.
+            elif type == 7:
+                if sub_packets[0] == sub_packets[1]:
+                    return 1
+                else:
+                    return 0
+            else:
+                print("ERROR")
+                return -1
+
+def evaluate(packets):
+    return evaluate_impl(packets[0])
+
+
+print("")
+print(evaluate(decode("C200B40A82")))
+print("3")
+print("")
+print(evaluate(decode("04005AC33890")))
+print("54")
+print("")
+print(evaluate(decode("880086C3E88112")))
+print("7")
+print("")
+print(evaluate(decode("CE00C43D881120")))
+print("9")
+print("")
+print(evaluate(decode("D8005AC2A8F0")))
+print("1")
+print("")
+print(evaluate(decode("F600BC2D8F")))
+print("0")
+print("")
+print(evaluate(decode("9C005AC2F8F0")))
+print("0")
+print("")
+print(evaluate(decode("9C0141080250320F1802104A08")))
+print("1")
+print("")
+
+
+print(evaluate(decode(hex)))

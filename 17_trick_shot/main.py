@@ -46,4 +46,38 @@ def print_trajectory(x1,x2,y1,y2,trajectory):
         print("")
 
 print_trajectory(sample[0], sample[1], sample[2], sample[3], [])
+print("")
 
+def simulate(vx, vy, x1, x2, y1, y2):
+    trajectory = [(vx, vy)]
+    current_x = vx
+    current_y = vy
+    while True:
+        #Due to drag, the probe's x velocity changes by 1 toward the value 0; that is, it decreases by 1 if it is greater than 0, increases by 1 if it is less than 0, or does not change if it is already 0.
+        if vx > 0:
+            vx = vx - 1
+        #Due to gravity, the probe's y velocity decreases by 1.
+        vy = vy - 1
+        
+        #The probe's x position increases by its x velocity.
+        current_x += vx
+        #The probe's y position increases by its y velocity.
+        current_y += vy
+        trajectory.append((current_x, current_y))
+
+        if current_x > x2 or current_y < y1:
+            break;
+    return trajectory
+
+print_trajectory(sample[0], sample[1], sample[2], sample[3], 
+    simulate(7, 2, sample[0], sample[1], sample[2], sample[3]))
+print("")
+print_trajectory(sample[0], sample[1], sample[2], sample[3], 
+    simulate(6, 3, sample[0], sample[1], sample[2], sample[3]))
+print("")
+print_trajectory(sample[0], sample[1], sample[2], sample[3], 
+    simulate(9, 0, sample[0], sample[1], sample[2], sample[3]))
+print("")
+print_trajectory(sample[0], sample[1], sample[2], sample[3], 
+    simulate(17, -4, sample[0], sample[1], sample[2], sample[3]))
+print("")

@@ -4,6 +4,7 @@ from queue import PriorityQueue
 from queue import LifoQueue as Stack
 from queue import Queue
 import json
+import copy
 
 input = list(
     map(lambda line : json.loads(line),
@@ -364,4 +365,35 @@ print(f"Actual:   {actual}")
 assert(f"{expected}" == f"{actual}")
 print("")
 
-print(sn_magnitude(sn_sum(input)))
+print(sn_magnitude(sn_sum(copy.deepcopy(input))))
+
+def find_largest(sns):
+    largest = 0
+    for i in range(0, len(sns)):
+        for j in range(0, len(sns)):
+            if not i == j:
+                mag = sn_magnitude(sn_add(copy.deepcopy(sns[i]), copy.deepcopy(sns[j])))
+                if mag > largest:
+                    largest = mag
+    return largest
+
+expected = 3993
+actual = find_largest([
+    [[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]],
+    [[[5,[2,8]],4],[5,[[9,9],0]]],
+    [6,[[[6,2],[5,6]],[[7,6],[4,7]]]],
+    [[[6,[0,7]],[0,9]],[4,[9,[9,0]]]],
+    [[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]],
+    [[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]],
+    [[[[5,4],[7,7]],8],[[8,3],8]],
+    [[9,3],[[9,9],[6,[4,9]]]],
+    [[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]],
+    [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]],
+])
+print(f"Expected: {expected}")
+print(f"Actual:   {actual}")
+assert(f"{expected}" == f"{actual}")
+print("")
+
+
+print(find_largest(copy.deepcopy(input)))

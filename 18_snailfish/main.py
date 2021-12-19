@@ -54,16 +54,25 @@ def go_left_until_int(val, sn):
     else:
         go_left_until_int(val, sn[0])
 
+# [[[[[9,8],1],2],3],4]
+#        / \
+#       / \ 4
+#      / \ 3
+#    / \  2
+#  / \  1
+#  9 8
 def explode_to_right(val, parent_stack):
     # go up until you can go to the right
     while not parent_stack.empty():
         (parent, direction) = parent_stack.get()
+        print(f"{parent} {direction}")
         if direction == "left":
             if isinstance(parent[1], int):
                 parent[1] += val
             else:
                 go_left_until_int(val, parent[1])
             return
+    print("nothing to the right")
 
 
 def go_right_until_int(val, sn):
@@ -109,6 +118,7 @@ def sn_try_explode_impl(sn, count, parent_stack):
             parent_stack.put((sn, 'left'))
             if sn_try_explode_impl(sn[0], count, parent_stack):
                 return True
+            parent_stack.get()
         if isinstance(sn[1], list):
             parent_stack.put((sn, 'right'))
             if sn_try_explode_impl(sn[1], count, parent_stack):

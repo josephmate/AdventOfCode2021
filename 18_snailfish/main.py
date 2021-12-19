@@ -65,8 +65,23 @@ def explode_to_right(val, parent_stack):
                 go_left_until_int(val, parent[1])
             return
 
+
+def go_right_until_int(val, sn):
+    if isinstance(sn[1], int):
+        sn[1] += val
+    else:
+        go_right_until_int(val, sn[1])
+
 def explode_to_left(val, parent_stack):
-    print("")
+    # go up until you can go to the left
+    while not parent_stack.empty():
+        (parent, direction) = parent_stack.get()
+        if direction == "right":
+            if isinstance(parent[0], int):
+                parent[0] += val
+            else:
+                go_right_until_int(val, parent[0])
+            return
 
 def sn_explode(sn, parent_stack):
     (parent, direction) = parent_stack.get()
@@ -124,16 +139,16 @@ print([[1, 2], [[3, 4], 5]])
 print(sn_add([1,2], [[3,4],5]))
 print("")
 
-print(f"{[[[[0,9],2],3],4]} True")
+print(f"Expected: {[[[[0,9],2],3],4]} True")
 sn = [[[[[9,8],1],2],3],4]
 reduced = sn_try_explode(sn)
-print(f"{sn} {reduced}")
+print(f"Actual:   {sn} {reduced}")
 print("")
 
-print(f"{[7,[6,[5,[7,0]]]]} True")
+print(f"Expected: {[7,[6,[5,[7,0]]]]} True")
 sn = [7,[6,[5,[4,[3,2]]]]]
 reduced = sn_try_explode(sn)
-print(f"{sn} {reduced}")
+print(f"Actual:   {sn} {reduced}")
 print("")
 
 exit()

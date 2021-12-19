@@ -151,6 +151,24 @@ reduced = sn_try_explode(sn)
 print(f"Actual:   {sn} {reduced}")
 print("")
 
+print(f"Expected: {[[6,[5,[7,0]]],3]} True")
+sn = [[6,[5,[4,[3,2]]]],1]
+reduced = sn_try_explode(sn)
+print(f"Actual:   {sn} {reduced}")
+print("")
+
+print(f"Expected: {[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]} True")
+sn = [[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]
+reduced = sn_try_explode(sn)
+print(f"Actual:   {sn} {reduced}")
+print("")
+
+print(f"Expected: {[[3,[2,[8,0]]],[9,[5,[7,0]]]]} True")
+sn = [[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]
+reduced = sn_try_explode(sn)
+print(f"Actual:   {sn} {reduced}")
+print("")
+
 exit()
 
 print([[[[0,7],4],[[7,8],[6,0]]],[8,1]])

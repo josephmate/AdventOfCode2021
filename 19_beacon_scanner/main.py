@@ -67,19 +67,55 @@ def generate_orientations_v1(scanner):
 
     return orientations
 
+# lets say we're facing the x 'into the screen'
+# y is going 'up'
+# z is left and right
+#
+#       y   x
+#       |  /
+#       | /
+# ------+------- z
+#      /
+#     /
+# if we're rotating around the x axis, we can ignore the x component
+def rotate_yz(coords):
 
-def generate_orientations(scanner):
-    # rotate 90 degrees 3 times to get all the up directions
+
+def flip_x(coords):
+    flipped_coords = []
+    for (x,y,z) in coords:
+        flipped_coords.append((x*-1,y,z))
+    return flipped_coords
+
+def swap(coords, col1, col2):
+    swapped = []
+    for coord in coords:
+        swapped_cord = [0, 0, 0]
+        swapped_cord[col1] = coord[col2]
+        swapped_cord[col2] = coord[col1]
+        swapped.append(swapped_cord)
+    return swapped
+
+def generate_orientations(coords):
+    # rotate 90 degrees on yz 3 times to get all the up directions
     # flip
-    # rotate 90 degrees 3 times to get all the up directions
+    # rotate 90 degrees on yz 3 times to get all the up directions
     # swap x and y of original
-    #   rotate 90 degrees 3 times to get all the up directions
+    #   rotate 90 degrees on 'new yz' 3 times to get all the up directions
     #   flip
-    #   rotate 90 degrees 3 times to get all the up directions
+    #   rotate 90 degrees 'new yz' 3 times to get all the up directions
     # swap x and z of original
-    #   rotate 90 degrees 3 times to get all the up directions
+    #   rotate 90 degrees 'new yz' 3 times to get all the up directions
     #   flip
-    #   rotate 90 degrees 3 times to get all the up directions
+    #   rotate 90 degrees 'new yz' 3 times to get all the up directions
+    orientations = []
+
+    swapped_xy = swap(coords, 0, 1)
+    orientations.append(swapped_xy)
+
+    swapped_xz = swap(coords, 0, 2)
+    orientations.append(swapped_xz)    
+
 
 
 for orientation in generate_orientations([(1,0,0)]):

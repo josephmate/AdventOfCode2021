@@ -78,8 +78,28 @@ def generate_orientations_v1(scanner):
 #      /
 #     /
 # if we're rotating around the x axis, we can ignore the x component
+# and we're left with:
+#
+# (y=3,z=-2)
+#       y
+#     d |   (y=2, z=3)
+#       |  a
+#       |   
+# ------+------- z
+#       |    
+#    c  |  
+#       |  b (y=-3, z=2)
+# (y=-2, z=-3)
+# swap then multiply y by -1 gets the result we need:
+# ( 2,  3)
+# (-3,  2)
+# (-2, -3)
+# ( 3, -2)
 def rotate_yz(coords):
-
+    rotated = []
+    for (x, y, z) in coords:
+        rotated.append((x, z*-1, y))
+    return rotated
 
 def flip_x(coords):
     flipped_coords = []
@@ -108,13 +128,33 @@ def generate_orientations(coords):
     #   rotate 90 degrees 'new yz' 3 times to get all the up directions
     #   flip
     #   rotate 90 degrees 'new yz' 3 times to get all the up directions
-    orientations = []
-
+    orientations = [coords]
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( flip_x(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
     swapped_xy = swap(coords, 0, 1)
     orientations.append(swapped_xy)
-
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( flip_x(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
     swapped_xz = swap(coords, 0, 2)
-    orientations.append(swapped_xz)    
+    orientations.append(swapped_xz)
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( flip_x(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    orientations.append( rotate_yz(orientations[len(orientations)-1]) )
+    return orientations  
 
 
 

@@ -140,8 +140,31 @@ def sn_try_explode_impl(sn, count, parent_stack):
 def sn_try_explode(sn):
     return sn_try_explode_impl(sn, 0, Stack())
 
+def sn_try_split_impl(sn, parent, direction):
+    if isinstance(sn, int):
+        # If any regular number is 10 or greater, the leftmost such regular number splits.
+        if sn > 9:
+            # the left element of the pair should be the regular number divided by two and rounded down
+            left = sn // 2
+            # the right element of the pair should be the regular number divided by two and rounded up
+            right = (sn // 2) + (sn % 2)
+            pair = [left, right]
+            if direction == "right":
+                parent[1] = pair
+            else:
+                parent[0] = pair
+            return True
+        else:
+            return False
+    else:
+        if sn_try_split_impl(sn[0], sn, "left"):
+            return True
+        if sn_try_split_impl(sn[1], sn, "right"):
+            return True
+        return False
+
 def sn_try_split(sn):
-    return False
+    return sn_try_split_impl(sn, None, None)
 
 def sn_reduce(sn):
     while True:
@@ -154,6 +177,7 @@ def sn_reduce(sn):
 def sn_add(sn1, sn2):
     added = [sn1, sn2]
     sn_reduce(added)
+    return added
 
 print([[1, 2], [[3, 4], 5]])
 print(sn_add([1,2], [[3,4],5]))
@@ -199,6 +223,11 @@ assert(reduced == True)
 assert(f"{[[3,[2,[8,0]]],[9,[5,[7,0]]]]}" == f"{sn}")
 print("")
 
+expected = [[[[0,7],4],[[7,8],[6,0]]],[8,1]]
+actual = sn_add( [[[[4,3],4],4],[7,[[8,4],9]]] , [1,1] )
+print(f"Expected: {expected}")
+print(f"Actual:   {actual}")
+assert(f"{expected}" == f"{actual}")
 exit()
 
 print([[[[0,7],4],[[7,8],[6,0]]],[8,1]])

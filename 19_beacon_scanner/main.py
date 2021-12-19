@@ -36,3 +36,51 @@ def parse_input(input):
 scanners = parse_input(input)
 print (scanners)
 
+# default orientation is
+# facing_sign = 1 (positive)
+# facing = 0  (x axis)
+# up direction
+def generate_orientation_v1(scanner, facing_sign, facing, up_direction):
+
+    return []
+
+def generate_orientations_v1(scanner):
+    orientations = []
+
+    # facing positive or negative
+    facing_signs = [1, -1]
+    # x, y, or z
+    facings = [0,1,2]
+    # any of four directions "up" from that facing.
+    up_directions = [
+        ( 1, 0),
+        ( 0, 1),
+        (-1, 0),
+        ( 0,-1),
+    ]
+
+    for facing_sign in facing_signs:
+        for facing in facings:
+            for up_direction in up_directions:
+                orientations.append(generate_orientation_v1(scanner, facing_sign, facing, up_direction))
+
+
+    return orientations
+
+
+def generate_orientations(scanner):
+    # rotate 90 degrees 3 times to get all the up directions
+    # flip
+    # rotate 90 degrees 3 times to get all the up directions
+    # swap x and y of original
+    #   rotate 90 degrees 3 times to get all the up directions
+    #   flip
+    #   rotate 90 degrees 3 times to get all the up directions
+    # swap x and z of original
+    #   rotate 90 degrees 3 times to get all the up directions
+    #   flip
+    #   rotate 90 degrees 3 times to get all the up directions
+
+
+for orientation in generate_orientations([(1,0,0)]):
+    print(orientation)

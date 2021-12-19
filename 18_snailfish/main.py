@@ -65,14 +65,12 @@ def explode_to_right(val, parent_stack):
     # go up until you can go to the right
     while not parent_stack.empty():
         (parent, direction) = parent_stack.get()
-        print(f"{parent} {direction}")
         if direction == "left":
             if isinstance(parent[1], int):
                 parent[1] += val
             else:
                 go_left_until_int(val, parent[1])
             return
-    print("nothing to the right")
 
 
 def go_right_until_int(val, sn):
@@ -92,6 +90,17 @@ def explode_to_left(val, parent_stack):
                 go_right_until_int(val, parent[0])
             return
 
+def copy_stack(stack):
+    vals = []
+    while not stack.empty():
+        vals.append(stack.get())
+    vals.reverse()
+    result = Stack()
+    for val in vals:
+        stack.put(val)
+        result.put(val)
+    return result
+
 def sn_explode(sn, parent_stack):
     (parent, direction) = parent_stack.get()
     if direction == 'left':
@@ -99,8 +108,9 @@ def sn_explode(sn, parent_stack):
     else:
         parent[1] = 0
     parent_stack.put((parent, direction))
+    parent_stack_for_right = copy_stack(parent_stack)
     explode_to_left(sn[0], parent_stack)
-    explode_to_right(sn[1], parent_stack)
+    explode_to_right(sn[1], parent_stack_for_right)
 
 def sn_try_explode_impl(sn, count, parent_stack):
     if isinstance(sn, int):
@@ -153,30 +163,40 @@ print(f"Expected: {[[[[0,9],2],3],4]} True")
 sn = [[[[[9,8],1],2],3],4]
 reduced = sn_try_explode(sn)
 print(f"Actual:   {sn} {reduced}")
+assert(reduced == True)
+assert(f"{[[[[0,9],2],3],4]}" == f"{sn}")
 print("")
 
 print(f"Expected: {[7,[6,[5,[7,0]]]]} True")
 sn = [7,[6,[5,[4,[3,2]]]]]
 reduced = sn_try_explode(sn)
 print(f"Actual:   {sn} {reduced}")
+assert(reduced == True)
+assert(f"{[7,[6,[5,[7,0]]]]}" == f"{sn}")
 print("")
 
 print(f"Expected: {[[6,[5,[7,0]]],3]} True")
 sn = [[6,[5,[4,[3,2]]]],1]
 reduced = sn_try_explode(sn)
 print(f"Actual:   {sn} {reduced}")
+assert(reduced == True)
+assert(f"{[[6,[5,[7,0]]],3]}" == f"{sn}")
 print("")
 
 print(f"Expected: {[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]} True")
 sn = [[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]
 reduced = sn_try_explode(sn)
 print(f"Actual:   {sn} {reduced}")
+assert(reduced == True)
+assert(f"{[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]}" == f"{sn}")
 print("")
 
 print(f"Expected: {[[3,[2,[8,0]]],[9,[5,[7,0]]]]} True")
 sn = [[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]
 reduced = sn_try_explode(sn)
 print(f"Actual:   {sn} {reduced}")
+assert(reduced == True)
+assert(f"{[[3,[2,[8,0]]],[9,[5,[7,0]]]]}" == f"{sn}")
 print("")
 
 exit()

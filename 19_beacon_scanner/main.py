@@ -5,6 +5,7 @@ from queue import LifoQueue as Stack
 from queue import Queue
 import json
 import copy
+from collections import deque
 
 input = list(
     map(lambda line : line.rstrip(),
@@ -197,6 +198,30 @@ def generate_orientations(coords):
 for orientation in generate_orientations([(1,0,0)]):
     print(orientation)
 
+def translate_relative_to_coord(coords, relative_coord):
+    (rx, ry, rz) = relative_coord
+    translated_coords = []
+    for (x,y,z) in coords:
+        translated_coords.append((x-rx, y-rx, z-ry))
+    return translated_coords
+
+# for each coord in coords
+#   for each potential in potential_coords
+#     translate coords relative to coord
+#     translate potential_coords relative to potential
+#     assuming they are the same point, then all the shared points should be the same
+#     that means the set of translated coords, insersected must be >= 12
+def find_overlapping_orientation(coords, orientations):
+    for coord in coords:
+        tranlsated_coords = translate_relative_to_coord(coords, coord)
+        for potential_coords in orientations:
+            for potential_coord in potential_coords:
+                tranlated_potential_coords = translate_relative_to_coord(potential_coords, potential_coord)
+                if len(set(tranlsated_coords).intersection(set(tranlated_potential_coords))) >= 12:
+                    return potential_coords
+
+    return None
+
 def render_absolute_map(scanners):
     # find the scanners that are common with 0,
     # then use the values from the orientation that match
@@ -207,14 +232,32 @@ def render_absolute_map(scanners):
     # try with the next list of potential scanners
     # remove it after done
     # keep doing this until no more scanners left
-    scanner_queue = Queue()
-    scanner_queue.put(scanners[0])
-    unprocessed_scanners = Queue()
+    #
+    # for the longest time i've been using the wrong queue an stack classes
+    # I should have been using deque instead of the multithread queue library...
+    # I cannot keep using the multithreaded queue library because qsize is not
+    # guarenteed.
+    scanner_queue = deque()
+    scanner_queue.append(scanners[0])
+    unprocessed_scanners = deque()
     for i in range(1, len(scanners)):
-        scanner_queue.put(scanners[i])
+        scanner_queue.append(scanners[i])
     
-    processed_scanners = []
-    while not scanner_queue.empty():
-        next_scanner = scanner_queue.get()
+    absolute_map = set()
+    while len(scanner_queue) > 0:
+        next_scanner = scanner_queue.popleft()
+        for j in range(0, len(unprocessed_scanners)):
+            potential_scanner = unprocessed_scanners.popleft()
+            potential_orientations = generate_orientations(potential_scanner)
+            orientation_num = find_overlapping_orientation(next_scanner, potential_orientations)
+            if not orientation_num == None:
+                print(f"0 and {j} overlap")
+                # TODO
+                continue
+            unprocessed_scanners.append(potential_scanner)
 
-    print("TODO")
+
+
+    return absolute_map
+
+print(render_absolute_map(input))

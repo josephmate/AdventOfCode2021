@@ -205,7 +205,7 @@ def translate(coords, vector):
     (vx,vy,vz) = vector
     translated_coords = []
     for (x,y,z) in coords:
-        translated_coords.append((x-vx, y-vy, z-vz))
+        translated_coords.append((x+vx, y+vy, z+vz))
     return translated_coords
 
 def translate_relative_to_coord(coords, relative_coord):

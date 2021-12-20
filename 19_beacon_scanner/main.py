@@ -257,6 +257,7 @@ def render_absolute_map(scanners):
     for i in range(1, len(scanners)):
         unprocessed_scanners.append(scanners[i])
     
+    deltas = []
     absolute_map = set()
     while len(scanner_queue) > 0:
         (next_scanner, next_scanner_num) = scanner_queue.popleft()
@@ -267,14 +268,21 @@ def render_absolute_map(scanners):
                 (delta, orientation) = overlap_result
                 print(f"next={next_scanner_num} potential={potential_scanner_num} delta={delta}")
                 scanner_queue.append((translate(orientation, delta), potential_scanner_num))
+                deltas.append(delta)
                 continue
             unprocessed_scanners.append((potential_scanner, potential_scanner_num))
         for coord in next_scanner:
             absolute_map.add(coord)
 
+    max_man_dist = 0
+    for a in deltas:
+        for b in deltas:
+            if not a == b:
+                man_dist = abs(a[0]-b[0]) + abs(a[1]-b[1]) + abs(a[2]-b[2])
+                if man_dist > max_man_dist:
+                    max_man_dist = man_dist
 
-
-    return absolute_map
+    return (absolute_map,max_man_dist)
 
 
 example1 = [
@@ -317,8 +325,10 @@ print(find_overlapping_orientation(
     ))
 print()
 
-absolute_map = render_absolute_map(scanners)
+(absolute_map, max_man_dist) = render_absolute_map(scanners)
 print("79")
 print(len(absolute_map))
 print()
+print("3621")
+print(max_man_dist)
 

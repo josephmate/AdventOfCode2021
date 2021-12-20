@@ -32,7 +32,7 @@ def parse_input(input):
     while index < len(input):
         (index, scanner) = parse_scanner(index, input)
         scanners.append(scanner)
-    return scanner
+    return scanners
 
 scanners = parse_input(input)
 print (scanners)
@@ -197,12 +197,13 @@ def generate_orientations(coords):
 
 for orientation in generate_orientations([(1,0,0)]):
     print(orientation)
+print()
 
 def translate_relative_to_coord(coords, relative_coord):
     (rx, ry, rz) = relative_coord
     translated_coords = []
     for (x,y,z) in coords:
-        translated_coords.append((x-rx, y-rx, z-ry))
+        translated_coords.append((x-rx, y-ry, z-rz))
     return translated_coords
 
 # for each coord in coords
@@ -211,13 +212,13 @@ def translate_relative_to_coord(coords, relative_coord):
 #     translate potential_coords relative to potential
 #     assuming they are the same point, then all the shared points should be the same
 #     that means the set of translated coords, insersected must be >= 12
-def find_overlapping_orientation(coords, orientations):
+def find_overlapping_orientation(coords, potential_scanner, overlap_size=12):
     for coord in coords:
         tranlsated_coords = translate_relative_to_coord(coords, coord)
-        for potential_coords in orientations:
+        for potential_coords in generate_orientations(potential_scanner):
             for potential_coord in potential_coords:
                 tranlated_potential_coords = translate_relative_to_coord(potential_coords, potential_coord)
-                if len(set(tranlsated_coords).intersection(set(tranlated_potential_coords))) >= 12:
+                if len(set(tranlsated_coords).intersection(set(tranlated_potential_coords))) >= overlap_size:
                     return potential_coords
 
     return None
@@ -248,9 +249,8 @@ def render_absolute_map(scanners):
         next_scanner = scanner_queue.popleft()
         for j in range(0, len(unprocessed_scanners)):
             potential_scanner = unprocessed_scanners.popleft()
-            potential_orientations = generate_orientations(potential_scanner)
-            orientation_num = find_overlapping_orientation(next_scanner, potential_orientations)
-            if not orientation_num == None:
+            orientation = find_overlapping_orientation(next_scanner, potential_scanner)
+            if not orientation == None:
                 print(f"0 and {j} overlap")
                 # TODO
                 continue
@@ -260,4 +260,33 @@ def render_absolute_map(scanners):
 
     return absolute_map
 
-print(render_absolute_map(input))
+
+example1 = [
+    (-1,-1,1),
+    (-2,-2,2),
+    (-3,-3,3),
+    (-2,-3,1),
+    (5,6,-4),
+    (8,0,7),
+]
+example2 = [
+    (1,-1,1),
+    (2,-2,2),
+    (3,-3,3),
+    (2,-1,3),
+    (-5,4,-6),
+    (-8,-7,0),
+]
+
+for c in generate_orientations(example2):
+    print (example1)
+    print(c)
+    print()
+
+print(find_overlapping_orientation(example1, example2, 6))
+print()
+print(find_overlapping_orientation(scanners[0], scanners[1]))
+
+exit()
+
+

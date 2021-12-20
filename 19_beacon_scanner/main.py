@@ -156,7 +156,9 @@ def generate_orientations(coords):
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
-    orientations.append( flip_x(orientations[len(orientations)-1]) )
+    # After debuging, I realized that flip by multiplying an axis doesn't work.
+    # By 'flipping' youre really just rotating twice around the y axis
+    orientations.append( rotate_around_y(rotate_around_y(orientations[len(orientations)-1])) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
@@ -178,7 +180,7 @@ def generate_orientations(coords):
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
-    orientations.append( flip_x(orientations[len(orientations)-1]) )
+    orientations.append( rotate_around_y(rotate_around_y(orientations[len(orientations)-1])) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
@@ -187,7 +189,7 @@ def generate_orientations(coords):
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
-    orientations.append( flip_x(orientations[len(orientations)-1]) )
+    orientations.append( rotate_around_y(rotate_around_y(orientations[len(orientations)-1])) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )
     orientations.append( rotate_around_x(orientations[len(orientations)-1]) )

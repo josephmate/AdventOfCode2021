@@ -29,9 +29,11 @@ def parse_scanner(index, input):
 def parse_input(input):
     index = 0
     scanners = []
+    scanner_num = 0
     while index < len(input):
         (index, scanner) = parse_scanner(index, input)
-        scanners.append(scanner)
+        scanners.append((scanner, scanner_num))
+        scanner_num += 1
     return scanners
 
 scanners = parse_input(input)
@@ -253,18 +255,20 @@ def render_absolute_map(scanners):
     scanner_queue.append(scanners[0])
     unprocessed_scanners = deque()
     for i in range(1, len(scanners)):
-        scanner_queue.append(scanners[i])
+        unprocessed_scanners.append(scanners[i])
     
     absolute_map = set()
     while len(scanner_queue) > 0:
-        next_scanner = scanner_queue.popleft()
-        for j in range(0, len(unprocessed_scanners)):
-            potential_scanner = unprocessed_scanners.popleft()
-            (delta, orientation) = find_overlapping_orientation(next_scanner, potential_scanner)
-            if not orientation == None:
-                scanner_queue.append(translate(orientation, delta))
+        (next_scanner, next_scanner_num) = scanner_queue.popleft()
+        for _ in range(0, len(unprocessed_scanners)):
+            (potential_scanner, potential_scanner_num) = unprocessed_scanners.popleft()
+            overlap_result = find_overlapping_orientation(next_scanner, potential_scanner)
+            if not overlap_result == None:
+                (delta, orientation) = overlap_result
+                print(f"next={next_scanner_num} potential={potential_scanner_num} delta={delta}")
+                scanner_queue.append((translate(orientation, delta), potential_scanner_num))
                 continue
-            unprocessed_scanners.append(potential_scanner)
+            unprocessed_scanners.append((potential_scanner, potential_scanner_num))
         for coord in next_scanner:
             absolute_map.add(coord)
 
@@ -297,7 +301,20 @@ for c in generate_orientations(example2):
 
 print(find_overlapping_orientation(example1, example2, 6))
 print()
-print(find_overlapping_orientation(scanners[0], scanners[1]))
+
+print((68,-1246,-43))
+print(scanners[0])
+print(find_overlapping_orientation(
+    scanners[0][0], 
+    scanners[1][0], 
+    ))
+print()
+
+
+print(find_overlapping_orientation(
+    scanners[1][0], 
+    scanners[4][0], 
+    ))
 print()
 
 absolute_map = render_absolute_map(scanners)

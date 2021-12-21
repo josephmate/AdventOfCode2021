@@ -43,3 +43,61 @@ def simulate(players):
 print(f"loser_score={loser_score} roll_count={roll_count} product={loser_score*roll_count}")
 (loser_score, roll_count) = simulate(input)
 print(f"loser_score={loser_score} roll_count={roll_count} product={loser_score*roll_count}")
+print()
+
+def simulate_dirac_dice_impl(turn, p1, p2, s1, s2, winning_score):
+    if turn == 2 and s1 >= winning_score:
+        return (1,0)
+    if turn == 1 and s2 >= winning_score:
+        return (0,1)
+    
+    p1_wins = 0
+    p2_wins = 0
+    for i in range(1, 3+1):
+        if turn == 1:
+            next = p1 + i
+            if next > 10:
+                next + next - 10
+            (sub_p1_wins, sub_p2_wins) = simulate_dirac_dice_impl(
+                2,
+                next,
+                p2,
+                s1 + next,
+                s2,
+                winning_score
+            )
+            p1_wins += sub_p1_wins
+            p2_wins += sub_p2_wins
+        else:
+            next = p2 + i
+            if next > 10:
+                next + next - 10
+            (sub_p1_wins, sub_p2_wins) = simulate_dirac_dice_impl(
+                1,
+                p1,
+                next,
+                s1,
+                s2 + next,
+                winning_score
+            )
+            p1_wins += sub_p1_wins
+            p2_wins += sub_p2_wins
+    return(p1_wins, p2_wins)
+
+
+
+def simulate_dirac_dice(players, winning_score):
+    return simulate_dirac_dice_impl(1, players[0], players[1], 0, 0,winning_score)
+
+# translated positions back to 1 to 10 index for convenience
+sample = [4,8]
+input = [8,9]
+
+# winning score 1
+# player 1 rolls 1 2 3 
+#                5 6 7
+# so that means for score 1 to 5, we expect players one to win in 1 roll
+for i in range(1, 11):
+    print(f"{i} {simulate_dirac_dice(sample, i)}")
+print()
+print((444356092776315, 341960390180808))

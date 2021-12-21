@@ -71,34 +71,58 @@ def binary_to_int(binary_num):
         power *= 2
     return result
 
-def calc_posn(light_pixels, steps, r, c):
+def calc_posn(
+    light_pixels,
+    steps,
+    r,
+    c,
+    memo,
+    even_colour,
+    odd_colour,
+):
     if steps == 0:
         return "#" if (r,c) in light_pixels else "."
     else:
-        points_to_consider = gen_points_to_consider(r, c)
-        binary_num = []
-        for (consider_r, consider_c) in points_to_consider:
-            digit = 1 if calc_posn(light_pixels, steps -1, consider_r, consider_c) == "#" else 0
-            binary_num.append(digit)
-        return image_enhancement_algorithm[binary_to_int(binary_num)]
+        min_r = -steps*4
+        min_c = -steps*4
+        max_r = len(input_image) + steps*4
+        max_c = len(input_image[0]) + steps*4
+        if r > max_r or r < min_r or c > max_c or c < min_c:
+            return even_colour if steps % 2 == 0 else odd_colour
+        elif (r,c) in memo[steps]:
+            return memo[steps][(r,c)]
+        else:
+            points_to_consider = gen_points_to_consider(r, c)
+            binary_num = []
+            for (consider_r, consider_c) in points_to_consider:
+                considered_colour = calc_posn(light_pixels, steps -1, consider_r, consider_c, memo, even_colour, odd_colour)
+                digit = 1 if considered_colour == "#" else 0
+                binary_num.append(digit)
+            result = image_enhancement_algorithm[binary_to_int(binary_num)]
+            memo[steps][(r,c)] = result
+            return result
 
 
-def calc_nth_step(light_pixels, steps):
+def calc_nth_step(light_pixels, steps, even_colour, odd_colour):
     min_r = -steps*4
     min_c = -steps*4
     max_r = len(input_image) + steps*4
     max_c = len(input_image[0]) + steps*4
 
+    memo = []
+    for i in range(0,steps+1):
+        memo.append({})
+
     result = []
     for r in range(min_r, max_r+1):
         current_row = []
         for c in range(min_c, max_c+1):
-            current_row.append(calc_posn(light_pixels, steps, r, c))
+            current_row.append(calc_posn(light_pixels, steps, r, c, memo, even_colour, odd_colour))
         result.append("".join(current_row))
     return result
 
-one_step = calc_nth_step(light_pixels, 1)
-two_step = calc_nth_step(light_pixels, 2)
+one_step = calc_nth_step(light_pixels, 1, ".", "#")
+two_step = calc_nth_step(light_pixels, 2, ".", "#")
 
 print(
     "\n".join(one_step)
@@ -115,7 +139,9 @@ for row in two_step:
 print(count)
 
 
-fifty_step = calc_nth_step(light_pixels, 50)
+#for sample.txt
+#fifty_step = calc_nth_step(light_pixels, 50, ".", ".")
+fifty_step = calc_nth_step(light_pixels, 50, ".", "#")
 count = 0
 for row in fifty_step:
     for ch in row:

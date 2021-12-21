@@ -113,3 +113,12 @@ for row in two_step:
         if ch == "#":
             count+=1
 print(count)
+
+
+fifty_step = calc_nth_step(light_pixels, 50)
+count = 0
+for row in fifty_step:
+    for ch in row:
+        if ch == "#":
+            count+=1
+print(count)

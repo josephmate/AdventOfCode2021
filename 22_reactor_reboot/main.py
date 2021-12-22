@@ -165,27 +165,27 @@ print(solve_small(input))
 #  |         |/
 #  ----------
 # x1,y1,z1
-# 
+# check corners is not enough
+# could be a line of one of the cubes that intersects:
+#        b  b
+#   a  a ba ba  a
+#   a  a ba ba  a
+#        b  b
 def is_intersecting(step_a, step_b):
     _, a_x1, a_x2, a_y1, a_y2, a_z1, a_z2 = step_a
     _, b_x1, b_x2, b_y1, b_y2, b_z1, b_z2 = step_b
     
-    # check if one of the corners of one are within the other
-    b_xs = [b_x1, b_x2]
-    b_ys = [b_y1, b_y2]
-    b_zs = [b_z1, b_z2]
-    print(f"{a_x1}..{a_x2}   {a_y1}..{a_y2}    {a_z1}..{a_z2}")
-    for b_x in b_xs:
-        for b_y in b_ys:
-            for b_z in b_zs:
-                print(f"{b_x},{b_y},{b_z}")
-                if (
-                        b_x >= a_x1 and b_x <= a_x2
-                    and b_y >= a_y1 and b_y <= a_y2
-                    and b_z >= a_z1 and b_z <= a_z2
-                ):
-                    return True
-    return False
+    return not (
+           # x is into the screen
+           # y is to the right
+           # z is up
+           b_x1 > a_x2 # completely infront of a
+        or b_x2 < a_x1 # completely behind
+        or b_y1 > a_y2 # completely to the right
+        or b_y2 < a_y1 # completely to the left
+        or b_z1 > a_z2 # completely above
+        or b_z2 < a_z1 # completely below 
+    )
 
 def intersection_graph(steps):
     graph = OrderedDict()
@@ -206,7 +206,6 @@ print()
 print(is_intersecting(sample_even_larger[0], sample_even_larger[1]))
 print(is_intersecting(sample_even_larger[1], sample_even_larger[0]))
 
-exit()
 
 print()
 print("\n".join(map( lambda t: str(t), intersection_graph(sample_even_larger).items())))

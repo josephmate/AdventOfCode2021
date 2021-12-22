@@ -157,15 +157,35 @@ print(solve_small(input))
 #    b  b  b
 # 1 to 3 and 1 to 3
 # 2 to 4 and 2 to 4
+#                 
+#   ____________ x2,y2,z2
+#  /          /|
+#  ----------/ |
+#  |         | /
+#  |         |/
+#  ----------
+# x1,y1,z1
+# 
 def is_intersecting(step_a, step_b):
     _, a_x1, a_x2, a_y1, a_y2, a_z1, a_z2 = step_a
     _, b_x1, b_x2, b_y1, b_y2, b_z1, b_z2 = step_b
-
-    return (
-            ((b_x1 >= a_x1 and b_x1 <= a_x2) or (b_x2 >= a_x1 and b_x2 <= a_x2))
-        and ((b_y1 >= a_y1 and b_y1 <= a_y2) or (b_y2 >= a_y1 and b_y2 <= a_y2))
-        and ((b_z1 >= a_z1 and b_z1 <= a_z2) or (b_z2 >= a_z1 and b_z2 <= a_z2))
-    )
+    
+    # check if one of the corners of one are within the other
+    b_xs = [b_x1, b_x2]
+    b_ys = [b_y1, b_y2]
+    b_zs = [b_z1, b_z2]
+    print(f"{a_x1}..{a_x2}   {a_y1}..{a_y2}    {a_z1}..{a_z2}")
+    for b_x in b_xs:
+        for b_y in b_ys:
+            for b_z in b_zs:
+                print(f"{b_x},{b_y},{b_z}")
+                if (
+                        b_x >= a_x1 and b_x <= a_x2
+                    and b_y >= a_y1 and b_y <= a_y2
+                    and b_z >= a_z1 and b_z <= a_z2
+                ):
+                    return True
+    return False
 
 def intersection_graph(steps):
     graph = OrderedDict()
@@ -183,6 +203,14 @@ def intersection_graph(steps):
     return graph
 
 print()
+print(is_intersecting(sample_even_larger[0], sample_even_larger[1]))
+print(is_intersecting(sample_even_larger[1], sample_even_larger[0]))
+
+exit()
+
+print()
 print("\n".join(map( lambda t: str(t), intersection_graph(sample_even_larger).items())))
 print()
-#print("\n".join(map( lambda t: str(t), intersection_graph(input).items())))
+
+
+# from the sample, there is ALOT of intersection

@@ -45,6 +45,17 @@ print(f"loser_score={loser_score} roll_count={roll_count} product={loser_score*r
 print(f"loser_score={loser_score} roll_count={roll_count} product={loser_score*roll_count}")
 print()
 
+dice_roll_count_map = {}
+for i in range(1, 3+1):
+    for j in range(1, 3+1):
+        for k in range(1,3+1):
+            sum = i+k+j
+            dice_roll_count_map[sum] = dice_roll_count_map.get(sum, 0) + 1
+print(dice_roll_count_map)
+dice_roll_counts = []
+for (roll, count) in dice_roll_count_map.items():
+    dice_roll_counts.append((roll,count))
+
 def simulate_dirac_dice_impl(turn, p1, p2, s1, s2, winning_score):
     if turn == 2 and s1 >= winning_score:
         return (1,0)
@@ -53,9 +64,9 @@ def simulate_dirac_dice_impl(turn, p1, p2, s1, s2, winning_score):
     
     p1_wins = 0
     p2_wins = 0
-    for i in range(1, 3+1):
+    for (roll, count) in dice_roll_counts:
         if turn == 1:
-            next = p1 + i
+            next = p1 + roll
             if next > 10:
                 next = next - 10
             (sub_p1_wins, sub_p2_wins) = simulate_dirac_dice_impl(
@@ -66,10 +77,10 @@ def simulate_dirac_dice_impl(turn, p1, p2, s1, s2, winning_score):
                 s2,
                 winning_score
             )
-            p1_wins += sub_p1_wins
-            p2_wins += sub_p2_wins
+            p1_wins += count*sub_p1_wins
+            p2_wins += count*sub_p2_wins
         else:
-            next = p2 + i
+            next = p2 + roll
             if next > 10:
                 next = next - 10
             (sub_p1_wins, sub_p2_wins) = simulate_dirac_dice_impl(
@@ -80,8 +91,8 @@ def simulate_dirac_dice_impl(turn, p1, p2, s1, s2, winning_score):
                 s2 + next,
                 winning_score
             )
-            p1_wins += sub_p1_wins
-            p2_wins += sub_p2_wins
+            p1_wins += count*sub_p1_wins
+            p2_wins += count*sub_p2_wins
     return(p1_wins, p2_wins)
 
 
@@ -108,6 +119,20 @@ input = [8,9]
 #    6           X                                1
 #    7           X                                1
 #
+# winning score = 7
+# Player 1     Player 2       Player 1    Player 2      Result
+#    5            9              X                        2
+#                10              X                        2
+#                 1              11                       1
+#                                12                       1
+#                                13                       1
+#    6           9               X                        2
+#               10               X                        2
+#                1               13                       1
+#                                14                       1
+#                                15                       1
+#    7           X                                        1
+# AHHHH this was all wrong! i'm suppose to roll 3 dice per turn :(
 for i in range(1, 11):
     print(f"{i} {simulate_dirac_dice(sample, i)}")
 print()

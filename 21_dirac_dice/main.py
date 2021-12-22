@@ -56,12 +56,14 @@ dice_roll_counts = []
 for (roll, count) in dice_roll_count_map.items():
     dice_roll_counts.append((roll,count))
 
-def simulate_dirac_dice_impl(turn, p1, p2, s1, s2, winning_score):
+def simulate_dirac_dice_impl(turn, p1, p2, s1, s2, memoization_map, winning_score):
     if turn == 2 and s1 >= winning_score:
         return (1,0)
     if turn == 1 and s2 >= winning_score:
         return (0,1)
-    
+    if (turn, p1, p2, s1, s2) in memoization_map:
+        return memoization_map[(turn, p1, p2, s1, s2)]
+
     p1_wins = 0
     p2_wins = 0
     for (roll, count) in dice_roll_counts:
@@ -75,6 +77,7 @@ def simulate_dirac_dice_impl(turn, p1, p2, s1, s2, winning_score):
                 p2,
                 s1 + next,
                 s2,
+                memoization_map,
                 winning_score
             )
             p1_wins += count*sub_p1_wins
@@ -89,16 +92,18 @@ def simulate_dirac_dice_impl(turn, p1, p2, s1, s2, winning_score):
                 next,
                 s1,
                 s2 + next,
+                memoization_map,
                 winning_score
             )
             p1_wins += count*sub_p1_wins
             p2_wins += count*sub_p2_wins
-    return(p1_wins, p2_wins)
+    memoization_map[(turn, p1, p2, s1, s2)] = (p1_wins, p2_wins)
+    return (p1_wins, p2_wins)
 
 
 
 def simulate_dirac_dice(players, winning_score):
-    return simulate_dirac_dice_impl(1, players[0], players[1], 0, 0,winning_score)
+    return simulate_dirac_dice_impl(1, players[0], players[1], 0, 0, {}, winning_score)
 
 # translated positions back to 1 to 10 index for convenience
 sample = [4,8]
@@ -136,5 +141,6 @@ input = [8,9]
 for i in range(1, 11):
     print(f"{i} {simulate_dirac_dice(sample, i)}")
 print()
-print({simulate_dirac_dice(sample, 21)})
+print(simulate_dirac_dice(sample, 21))
 print((444356092776315, 341960390180808))
+print(simulate_dirac_dice(input, 21))

@@ -6,6 +6,7 @@ from queue import Queue
 import json
 import copy
 from collections import deque
+from typing import OrderedDict
 
 # on x=10..12,y=10..12,z=10..12
 # off x=9..11,y=9..11,z=9..11
@@ -26,6 +27,7 @@ def parse_file(filename):
 
 sample_small = parse_file('sample_small.txt')
 sample_large = parse_file('sample_large.txt')
+sample_even_larger = parse_file('sample_even_larger.txt')
 input = parse_file('input.txt')
 
 def solve_small(steps):
@@ -56,3 +58,131 @@ print("590784")
 print(solve_small(sample_large))
 print("input soln")
 print(solve_small(input))
+
+# 2,758,514,936,282,235 entries won't fit into a set
+# so we need a way to count the cubes iteratively instead
+# of putting each coord into a set
+# Let stick to 2D to make visualizing easier
+# Suppose o is on
+# Suppose . is of
+# . . .
+# . . .
+# . . .
+# 1 to 3 , 1 to 3
+# o o o
+# o o o
+# o o o
+# count is 9 so far
+# 2 to 2 , 2 to 2
+# o o o
+# o . o
+# o o o
+# we need to recognize 1 coord intersects with 3 by 3
+# so need to reduce the count by 1
+# count is 8 so far
+# 1 to 3, 1 to 3
+# o o o
+# o o o
+# o o o
+# need to recongize that
+# a) 2,2 is off and we can turn that on
+# b) 1,3 to 1,3 is already on minus the of
+# so some how need to come up with incrementing by 1...?
+# what if when processing the third cube, we look at each previous cube 1 by 1
+# third cube is 3 by 3 so increment by 9
+# so second cube, intersects on off , so increment by 1
+# first cube incersects by 9 so decrement by 9
+# overall we incremented by 1 as expected.
+# lets try with another example to check
+#
+# on 2 to 4, 2 to 4
+# . . . . .
+# . o o o .
+# . o o o .
+# . o o o .
+# . . . . .
+# off 3 to 3, 3 to 3
+# . . . . .
+# . o o o .
+# . o . o .
+# . o o o .
+# . . . . .
+# on 3 to 5, 3 to 5
+# . . . . .
+# . o o o .
+# . o o o o
+# . o o o o
+# . . o o o
+# step 1 (0):
+#   cube is 3by3 so add 9
+#   no cubes before it so no interesections
+# step 2(9):
+#   cube is 1 by 1 
+#   intersects with 3 by 3 so decrement by 1
+# step 3(8):
+#  cube is 3 by 3 so add 9
+#  intersects with off 1 by 1 so increment by 1
+#  insersects with on 2by2 so decrement by 4
+# 14
+# what about double offs?
+# o o
+# o o
+# then
+# o o
+# o . 
+# then again
+# o o
+# o . 
+# after step 2 we have 3
+# intersect off 1by1 so increment by 1
+# intersect on  1by1 so decrement by 1
+# total delta is 0
+# final result 3
+#
+# double off, no on
+# .
+#
+# .
+# intersect off 1by1 decrement by 1
+# final result -1 ????
+# it seems like I need to recurse on the intersections somehow
+
+# let look at the cube insection graph to see the depth
+# maybe im making the problem more complex than it needs
+# to be
+
+# a  a  a
+# a ab ab  b
+# a ab ab  b
+#    b  b  b
+# 1 to 3 and 1 to 3
+# 2 to 4 and 2 to 4
+def is_intersecting(step_a, step_b):
+    _, a_x1, a_x2, a_y1, a_y2, a_z1, a_z2 = step_a
+    _, b_x1, b_x2, b_y1, b_y2, b_z1, b_z2 = step_b
+
+    return (
+            ((b_x1 >= a_x1 and b_x1 <= a_x2) or (b_x2 >= a_x1 and b_x2 <= a_x2))
+        and ((b_y1 >= a_y1 and b_y1 <= a_y2) or (b_y2 >= a_y1 and b_y2 <= a_y2))
+        and ((b_z1 >= a_z1 and b_z1 <= a_z2) or (b_z2 >= a_z1 and b_z2 <= a_z2))
+    )
+
+def intersection_graph(steps):
+    graph = OrderedDict()
+    for i in range(0, len(steps)):
+        for j in range(0, len(steps)):
+            if not i == j and is_intersecting(steps[i], steps[j]):
+                if i in graph:
+                    graph[i].append(j)
+                else:
+                    graph[i] = [j]
+                if j in graph:
+                    graph[j].append(i)
+                else:
+                    graph[j] = [i]
+    return graph
+
+print()
+print("\n".join(map( lambda t: str(t), intersection_graph(sample_even_larger).items())))
+print()
+#print("\n".join(map( lambda t: str(t), intersection_graph(input).items())))

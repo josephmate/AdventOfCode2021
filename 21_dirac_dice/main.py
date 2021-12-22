@@ -57,7 +57,7 @@ def simulate_dirac_dice_impl(turn, p1, p2, s1, s2, winning_score):
         if turn == 1:
             next = p1 + i
             if next > 10:
-                next + next - 10
+                next = next - 10
             (sub_p1_wins, sub_p2_wins) = simulate_dirac_dice_impl(
                 2,
                 next,
@@ -71,7 +71,7 @@ def simulate_dirac_dice_impl(turn, p1, p2, s1, s2, winning_score):
         else:
             next = p2 + i
             if next > 10:
-                next + next - 10
+                next = next - 10
             (sub_p1_wins, sub_p2_wins) = simulate_dirac_dice_impl(
                 1,
                 p1,
@@ -93,11 +93,23 @@ def simulate_dirac_dice(players, winning_score):
 sample = [4,8]
 input = [8,9]
 
+# player1=4 , player2=8
 # winning score 1
 # player 1 rolls 1 2 3 
 #                5 6 7
 # so that means for score 1 to 5, we expect players one to win in 1 roll
+# for 6 is when the chances start opening up for players 2
+# Player 1     Player 2       Player 1          Result
+#    5            9              X                2
+#                10              X                2
+#                 1              6                1
+#                                7                1
+#                                8                1
+#    6           X                                1
+#    7           X                                1
+#
 for i in range(1, 11):
     print(f"{i} {simulate_dirac_dice(sample, i)}")
 print()
+print({simulate_dirac_dice(sample, 21)})
 print((444356092776315, 341960390180808))

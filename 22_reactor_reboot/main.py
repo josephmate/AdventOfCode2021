@@ -7,6 +7,7 @@ import json
 import copy
 from collections import deque
 from typing import OrderedDict
+import math
 
 # on x=10..12,y=10..12,z=10..12
 # off x=9..11,y=9..11,z=9..11
@@ -213,3 +214,100 @@ print()
 
 
 # from the sample, there is ALOT of intersection
+
+# what if I sub divide the universe into smaller squares until it's iterable in one minute?
+# lets see how many input cubes (ignoring the first in the -50 to 50 set)
+# if there are only 1-2 cubes in each, it should be much easier to solve
+
+def get_boundary(steps):
+    return (
+        min(map(lambda step: step[1], steps)),
+        max(map(lambda step: step[2], steps)),
+        min(map(lambda step: step[3], steps)),
+        max(map(lambda step: step[4], steps)),
+        min(map(lambda step: step[5], steps)),
+        max(map(lambda step: step[6], steps)),
+    )    
+
+print(get_boundary(sample_even_larger))
+print(get_boundary(input))
+print()
+
+# 2,758,514,936,282,235 need to be reduced to 2^32
+# 140246 needs to be reduced to about 1625
+print(pow(2_758_514_936_282_235, 1/3))
+print(pow(pow(2,32), 1/3))
+print(140246/1625)
+print( math.log(pow(1625,3))/math.log(2) )
+# so we're dealing with cubes of about 86 unit
+
+def count_steps_in_cubes(steps, divider):
+    min_x, max_x, min_y, max_y, min_z, max_z = get_boundary(steps)
+
+    # counts the number of cubes that have x cubes passing through it
+    counts = {}
+    x_increment = (max_x - min_x) // divider
+    y_increment = (max_y - min_y) // divider
+    z_increment = (max_z - min_z) // divider
+
+    i = 0
+    for x1 in range(min_x, max_x+1, x_increment):
+        print(i)
+        i += 1
+        for y1 in range(min_y, max_y+1, y_increment):
+            for z1 in range(min_z, max_z+1, z_increment):
+                x2 = x1 + x_increment
+                y2 = y1 + y_increment
+                z2 = z1 + z_increment
+                count = 0
+                for step in steps:
+                    if is_intersecting(
+                        (False, x1,x2,y1,y2,z1,z2),
+                        step
+                    ):
+                        count += 1
+                counts[count] = counts.get(count, 0) + 1
+    return counts
+
+
+print()
+# divider=100
+# (0, 498535)
+# (1, 153723)
+# (2, 124807)
+# (3, 105378)
+# (4, 71922)
+# (5, 42809)
+# (6, 17709)
+# (7, 8106)
+# (8, 5026)
+# (9, 2010)
+# (10, 268)
+# (11, 8)
+# divider=200
+# (0, 3975791)
+# (1, 1228022)
+# (2, 1004724)
+# (3, 830487)
+# (4, 540722)
+# (5, 308315)
+# (6, 120934)
+# (7, 61477)
+# (8, 37725)
+# (9, 11472)
+# (10, 910)
+# (11, 22)
+# divider=500
+# (0, 61629679)
+# (1, 19352038)
+# (2, 15800534)
+# (3, 12816593)
+# (4, 8167703)
+# (5, 4586200)
+# (6, 1773080)
+# (7, 908790)
+# (8, 555530)
+# (9, 155444)
+# (10, 5857)
+# (11, 53)
+print("\n".join(map( lambda t: str(t), count_steps_in_cubes(sample_even_larger,500).items())))

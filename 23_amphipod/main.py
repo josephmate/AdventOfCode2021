@@ -108,7 +108,38 @@ def get_moves_to_hallway(amphipod_map, move_from):
     return moves
 
 def get_move_into_room(amphipod_map, move_from):
-    return None
+    letter = amphipod_map[(move_from)]
+    if letter == 'A':
+        column = 3
+    elif letter == 'B':
+        column = 5
+    elif letter == 'C':
+        column = 7
+    else:# letter == 'D':
+        column = 9
+
+    # is anyone blocking the front position?
+    # then there's no way we can go to the front or back position
+    if (2,column) in amphipod_map:
+        return None
+    
+    # is there anyone blocking the path on the way to the room?
+    (r,c) = move_from
+    if c <= column:
+        for i in range(c+1, column+1):
+            if (r,i) in amphipod_map:
+                return None
+    else: # c > column:
+        for i in range(column, c, -1):
+            if (r,i) in amphipod_map:
+                return None
+
+    if (3,column) not in amphipod_map:
+        row = 3
+    else:
+        row = 2
+
+    return (letter, move_from, (row, column))
 
 def get_moves(amphipod_map):
     moves = []
@@ -121,8 +152,8 @@ def get_moves(amphipod_map):
                 moves.extend(get_moves_to_hallway(amphipod_map,(2,c)))
             # the bottom guy moves if he's not already in the right location
             #   and there is no one blocking him
-            if not amphipod_map[(3,c)] == cave_map[(3,c)] and (2,c) not in amphipod_map:
-                moves.extend(get_moves_to_hallway(amphipod_map,(2,c)))
+            if (3,c) in amphipod_map and not amphipod_map[(3,c)] == cave_map[(3,c)] and (2,c) not in amphipod_map:
+                moves.extend(get_moves_to_hallway(amphipod_map,(3,c)))
 
     for c in [1,2,4,6,8,10,11]:
         # if some one is in the halway
@@ -177,8 +208,6 @@ def min_energy(amphipod_map):
             next_map_frozen = freezemap(next_map)
             if next_map_frozen not in visited or next_energy < visited[next_map_frozen]:
                 visited[next_map_frozen] = next_energy
-                print(next_energy)
-                print(next_map)
                 id = id + 1
                 heappush(priority_queue, (next_energy, id, next_map))
 

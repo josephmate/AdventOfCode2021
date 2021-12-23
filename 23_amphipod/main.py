@@ -28,13 +28,13 @@ def parse_file(filename):
 cave_map = {
     (1,1): '.',
     (1,2): '.',
-    (1,3): 'M',
+    (1,3): '-',
     (1,4): '.',
-    (1,5): 'M',
+    (1,5): '-',
     (1,6): '.',
-    (1,7): 'M',
+    (1,7): '-',
     (1,8): '.',
-    (1,9): 'M',
+    (1,9): '-',
     (1,10): '.',
     (1,11): '.',
     (2,3): 'A',
@@ -86,7 +86,7 @@ def is_hallway(posn):
 def get_moves_to_hallway(amphipod_map, move_from):
     (r,c) = move_from
     # something is blocking on the way out, so return nothing
-    if c == 3 and (r,2) in amphipod_map:
+    if r == 3 and (2,c) in amphipod_map:
         return []
     
     letter = amphipod_map[move_from]
@@ -107,6 +107,15 @@ def get_moves_to_hallway(amphipod_map, move_from):
             break
     return moves
 
+# This is not a valid move:
+# ...B...A.D.
+#   . C B .  
+#   A D C .  
+# 
+# ('A', (1, 8), (2, 3), 6, 2029)
+# ...B.....D.
+#   A C B .  
+#   A D C . 
 def get_move_into_room(amphipod_map, move_from):
     letter = amphipod_map[(move_from)]
     if letter == 'A':
@@ -130,7 +139,7 @@ def get_move_into_room(amphipod_map, move_from):
             if (r,i) in amphipod_map:
                 return None
     else: # c > column:
-        for i in range(column, c, -1):
+        for i in range(c-1, column, -1):
             if (r,i) in amphipod_map:
                 return None
 
@@ -197,21 +206,26 @@ def min_energy(amphipod_map):
     id = 0
     visited = {}
     visited[freezemap(amphipod_map)] = 0
-    heappush(priority_queue, (0, 0, amphipod_map.copy()))
+    paths = {}
+    heappush(priority_queue, (0, 0, amphipod_map.copy(), []))
     while len(priority_queue) > 0:
-        current_energy, _, current_map = heappop(priority_queue)
+        current_energy, _, current_map, path = heappop(priority_queue)
         for letter, move_from, move_to in get_moves(current_map):
-            next_energy = current_energy + energy(letter) * man_dist(move_from, move_to)
+            additional_energy = energy(letter) * man_dist(move_from, move_to)
+            next_energy = current_energy + additional_energy
             next_map = current_map.copy()
             del next_map[move_from]
             next_map[move_to] = letter
             next_map_frozen = freezemap(next_map)
             if next_map_frozen not in visited or next_energy < visited[next_map_frozen]:
+                new_path = path.copy()
+                new_path.append((letter, move_from, move_to, additional_energy, next_energy))
                 visited[next_map_frozen] = next_energy
+                paths[next_map_frozen] = new_path
                 id = id + 1
-                heappush(priority_queue, (next_energy, id, next_map))
+                heappush(priority_queue, (next_energy, id, next_map, new_path))
 
-    end_result = {
+    end_result = freezemap({
         (2,3): 'A',
         (3,3): 'A',
         (2,5): 'B',
@@ -220,11 +234,42 @@ def min_energy(amphipod_map):
         (3,7): 'C',
         (2,9): 'D',
         (3,9): 'D',
-    }
-    return visited[freezemap(end_result)]
+    })
+    return (visited[end_result], paths[end_result])
 
 
 
 
 print("expected: 12521")
-print(min_energy(sample))
+(me, path) = min_energy(sample)
+print(f"actual:   {me}")
+
+def print_map(amphipod_map):
+    for r in range (1,3+1):
+        for c in range (1,11+1):
+            if (r,c) in amphipod_map:
+                print(amphipod_map[(r,c)], end="")
+            elif r == 1:
+                print('.', end="")
+            elif c in [3,5,7,9]:
+                print('.', end="")
+            else:
+                print(" ", end="")
+        print()
+
+def print_path(path, amphipod_map):
+    amphipod_map = amphipod_map.copy()
+    print_map(amphipod_map)
+    for step in path:
+        print()
+        print(str(step))
+        letter, move_from, move_to, _, _ = step
+        del amphipod_map[move_from]
+        amphipod_map[move_to] = letter
+        print_map(amphipod_map)
+
+print_path(path, sample)
+
+print("puzzle input:")
+(me, path) = min_energy(input)
+print(me)

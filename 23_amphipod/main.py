@@ -76,18 +76,39 @@ print()
 #   not move again until they can move fully into a room.)
 
 def is_home(posn):
-    r,c = posn
+    r,_ = posn
     return r == 2 or r == 3
 
 def is_hallway(posn):
-    r,c = posn
+    r,_ = posn
     return r == 1
 
 def get_moves_to_hallway(amphipod_map, move_from):
-    return []
+    (r,c) = move_from
+    # something is blocking on the way out, so return nothing
+    if c == 3 and (r,2) in amphipod_map:
+        return []
+    
+    letter = amphipod_map[move_from]
+    moves = []
+    # move from doormat to the left until you hit something
+    for leftc in range(c-1, 1-1, -1):
+        if (1,leftc) not in amphipod_map:
+            if cave_map[(1,leftc)] == '.':
+                moves.append((letter, move_from, (1,leftc)))
+        else:
+            break
+    # move from doormat to the right until you hit something
+    for rightc in range(c+1, 11+1, 1):
+        if (1,rightc) not in amphipod_map:
+            if cave_map[(1,rightc)] == '.':
+                moves.append((letter, move_from, (1,rightc)))
+        else:
+            break
+    return moves
 
-def get_move_into_room():
-    return []
+def get_move_into_room(amphipod_map, move_from):
+    return None
 
 def get_moves(amphipod_map):
     moves = []
@@ -142,11 +163,12 @@ def freezemap(mutable_map):
 
 def min_energy(amphipod_map):
     priority_queue = []
+    id = 0
     visited = {}
     visited[freezemap(amphipod_map)] = 0
-    heappush(priority_queue, (0, amphipod_map.copy()))
+    heappush(priority_queue, (0, 0, amphipod_map.copy()))
     while len(priority_queue) > 0:
-        current_energy, current_map = heappop(priority_queue)
+        current_energy, _, current_map = heappop(priority_queue)
         for letter, move_from, move_to in get_moves(current_map):
             next_energy = current_energy + energy(letter) * man_dist(move_from, move_to)
             next_map = current_map.copy()
@@ -155,7 +177,10 @@ def min_energy(amphipod_map):
             next_map_frozen = freezemap(next_map)
             if next_map_frozen not in visited or next_energy < visited[next_map_frozen]:
                 visited[next_map_frozen] = next_energy
-                heappush(priority_queue, (next_energy, next_map))
+                print(next_energy)
+                print(next_map)
+                id = id + 1
+                heappush(priority_queue, (next_energy, id, next_map))
 
     end_result = {
         (2,3): 'A',

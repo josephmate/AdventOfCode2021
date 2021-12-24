@@ -20,7 +20,7 @@ import time
 # div a b - Divide the value of a by the value of b, truncate the result to an integer, then store the result in variable a. (Here, "truncate" means to round the value toward zero.)
 # mod a b - Divide the value of a by the value of b, then store the remainder in variable a. (This is also called the modulo operation.)
 # eql a b - If the value of a and b are equal, then store the value 1 in variable a. Otherwise, store the value 0 in variable a.
-input_pattern = r'([a-z0-9-]+) ([a-z0-9-]+)'
+input_pattern = r'([a-z]+) ([a-z]+)'
 operator_variable_pattern = r'([a-z]+) ([a-z]+) ([a-z]+)'
 operator_literal_pattern = r'([a-z]+) ([a-z]+) ([0-9-]+)'
 def parse_file(filename):
@@ -40,7 +40,7 @@ def parse_file(filename):
                 alu_instructions.append((match.group(1), match.group(2), int(match.group(3))))
                 continue
             
-            match = re.search(operator_literal_pattern, line)
+            match = re.search(input_pattern, line)
             if match != None:
                 alu_instructions.append((match.group(1), match.group(2)))
                 continue
@@ -53,10 +53,10 @@ sample_med = parse_file('sample_med.txt')
 sample_large = parse_file('sample_large.txt')
 input = parse_file('input.txt')
 
-print(sample_2_line)
-print(sample_med)
-print(sample_large)
-print(input)
+#print(sample_2_line)
+#print(sample_med)
+#print(sample_large)
+#print(input)
 
 # log(9^14)/log(2)
 # = 44
@@ -95,7 +95,7 @@ print(input)
 from pulp import *
 
 def solve_pulp(alu_instructions):
-    problem = LpProblem("MONAD Problem", LpMaximize)
+    problem = LpProblem("MONAD_Problem", LpMaximize)
     
     # add variables for each digit of the model number
     model_vars = []
@@ -105,7 +105,7 @@ def solve_pulp(alu_instructions):
         objective_sum.append(model_vars[i]*10**(13-i))
     
     # objective function to maximize
-    problem += lpSum(objective_sum), "max model number"
+    problem += lpSum(objective_sum), "max_model_number"
     
     current_model_digit = 0
     variable_counter = {
@@ -117,15 +117,15 @@ def solve_pulp(alu_instructions):
     # map of string to the pulp variable
     variable_map = {
         'w_0': LpVariable('w_0', None, None, LpInteger),
-        'x_0': LpVariable('w_0', None, None, LpInteger),
-        'y_0': LpVariable('w_0', None, None, LpInteger),
-        'z_0': LpVariable('w_0', None, None, LpInteger),
+        'x_0': LpVariable('x_0', None, None, LpInteger),
+        'y_0': LpVariable('y_0', None, None, LpInteger),
+        'z_0': LpVariable('z_0', None, None, LpInteger),
     }
     # all variables start off as 0
     for variable_name in variable_map.keys():
         problem += (
             variable_map[variable_name] == 0,
-            f"input instruction {variable_name}=0"
+            f"input_instruction_{variable_name}=0"
         )
 
     for alu_inst in alu_instructions:
@@ -138,7 +138,7 @@ def solve_pulp(alu_instructions):
             # inp a - Read an input value and write it to variable a.
             problem += (
                 variable_map[new_resolved_variable_name] == model_vars[current_model_digit],
-                f"input instruction {new_resolved_variable_name}=model[{current_model_digit}]"
+                f"input_instruction_{new_resolved_variable_name}=model[{current_model_digit}]"
             )
             current_model_digit += 1
         elif isinstance(alu_inst[2], int):
@@ -175,10 +175,39 @@ def solve_pulp(alu_instructions):
                     prev_var <= new_var*(alu_inst[2]+1)-1
                 )
             elif alu_inst[0] == 'mod':
-                continue
-                # modulus not implemented in pulp :(
+                new_var_divisor = LpVariable(new_resolved_variable_name + '_divisor', None, None, LpInteger)
+                # create a new variable for the division
                 problem += (
-                    new_var == prev_var % alu_inst[2]
+                    new_var_divisor*alu_inst[2] <= prev_var
+                )
+                problem += (
+                     prev_var <= (new_var_divisor*(alu_inst[2]+1))-1
+                )
+                # the division is the remainder of the division
+                problem += (
+                    new_var == ((new_var_divisor+1) * alu_inst[2]) - new_var_divisor * alu_inst[2]
+                )
+                # could be exact (remainder 0) so don't allow the modulus value
+                problem += (
+                    new_var <= alu_inst[2] - 1
+                )
+                problem += (
+                    new_var >= 0
+                )
+            elif alu_inst[0] == 'eql':
+                #eql a b - If the value of a and b are equal, then store the value 1 in variable a. Otherwise, store the value 0 in variable a.
+                # a2 = [0,1] 
+                # 0 = a2*(a1-b1)
+                problem += (
+                    new_var >= 0
+                )
+                problem += (
+                    new_var <= 1
+                )
+                problem += (
+                    # error from pulp Non-constant expressions cannot be multiplied
+                    # nnoooooooo there's no way around this one
+                    0 == new_var*(prev_var-alu_inst[2])
                 )
             #add a b - Add the value of a to the value of b, then store the result in variable a.
             #mul a b - Multiply the value of a by the value of b, then store the result in variable a.
@@ -187,11 +216,54 @@ def solve_pulp(alu_instructions):
             #eql a b - If the value of a and b are equal, then store the value 1 in variable a. Otherwise, store the value 0 in variable a.
             # a2 = [0,1] 
             # 0 = a2*(a1-b1)
-            print("TODO")
+            else:
+                print(f"TODO {alu_inst}")
+        else:
+            print(f"TODO {alu_inst}")
 
         variable_counter[unresolved_variable_name] = new_variable_count
 
 
-solve_pulp(input)
+#solve_pulp(input)
 
-# so integer programming won't work so now back to the drawing board
+# I cannot get integer programming to work with modulus
+# and cannot figure out a workaround so back to the
+# drawing board
+
+def gen_final_expression(alu_instructions):
+    model_counter = 0
+    variable_map = {}
+    idx = 0
+    for alu_inst in alu_instructions:
+        print(f"{idx}")
+        idx += 1
+        if len(alu_inst) == 2:
+            # inp a - Read an input value and write it to variable a.
+            variable_map[alu_inst[1]] = "model_" + str(model_counter)
+            model_counter += 1
+        else:
+            old_eqn = variable_map.get(alu_inst[1], "0")
+            if isinstance(alu_inst[2], int):
+                rhs = str(alu_inst[2])
+            else:
+                rhs = variable_map.get(alu_inst[2], "0")
+
+            #add a b - Add the value of a to the value of b, then store the result in variable a.
+            if alu_inst[0] == 'add':
+                operator = '+'
+            elif alu_inst[0] == 'mul':
+                operator = '*'
+            elif alu_inst[0] == 'div':
+                operator = "/"
+            elif alu_inst[0] == 'mod':
+                operator = "%"
+            elif alu_inst[0] == 'eql':
+                operator = "=="
+            else:
+                print(f"TODO {alu_inst}")
+            
+            new_eqn = '(' + old_eqn + operator + rhs + ')'
+            variable_map[alu_inst[1]] = new_eqn
+    return "0 = " + variable_map["z"]
+
+print(gen_final_expression(input))

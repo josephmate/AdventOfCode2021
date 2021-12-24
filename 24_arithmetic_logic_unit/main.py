@@ -10,7 +10,7 @@ from typing import OrderedDict
 import math
 from heapq import *
 import time
-
+from collections import deque
 
 
 
@@ -235,35 +235,69 @@ def gen_final_expression(alu_instructions):
     variable_map = {}
     idx = 0
     for alu_inst in alu_instructions:
-        print(f"{idx}")
+        if idx == 5:
+            print("".join(variable_map.get("w", ["0"])))
+            print("".join(variable_map.get("x", ["0"])))
+            print("".join(variable_map.get("y", ["0"])))
+            print("".join(variable_map.get("z", ["0"])))
+            break
+        #print(f"{idx}")
         idx += 1
         if len(alu_inst) == 2:
             # inp a - Read an input value and write it to variable a.
-            variable_map[alu_inst[1]] = "model_" + str(model_counter)
+            variable_map[alu_inst[1]] = deque(["model_" + str(model_counter)])
             model_counter += 1
+        # optimizations to reduce equation size
         else:
-            old_eqn = variable_map.get(alu_inst[1], "0")
-            if isinstance(alu_inst[2], int):
-                rhs = str(alu_inst[2])
-            else:
-                rhs = variable_map.get(alu_inst[2], "0")
+            old_eqn = variable_map.get(alu_inst[1], deque(["0"]))
 
-            #add a b - Add the value of a to the value of b, then store the result in variable a.
-            if alu_inst[0] == 'add':
-                operator = '+'
-            elif alu_inst[0] == 'mul':
-                operator = '*'
-            elif alu_inst[0] == 'div':
-                operator = "/"
-            elif alu_inst[0] == 'mod':
-                operator = "%"
-            elif alu_inst[0] == 'eql':
-                operator = "=="
+            # optimizations
+            if alu_inst[0] == 'mul' and isinstance(alu_inst[2], int) and alu_inst[2] == 0:
+                # a * 0 = 0
+                variable_map[alu_inst[1]] = deque(["0"])
+            if isinstance(alu_inst[2], int) and len(old_eqn) == 1 and old_eqn[0].isnumeric:
+                # literal op literal = literal
+                literal1 = int(old_eqn[0])
+                literal2 = int(alu_inst[2])
+                if alu_inst[0] == 'add':
+                    result = literal1 + literal2
+                elif alu_inst[0] == 'mul':
+                    result = literal1 * literal2
+                elif alu_inst[0] == 'div':
+                    result = literal1 // literal2
+                elif alu_inst[0] == 'mod':
+                    result = literal1 % literal2
+                elif alu_inst[0] == 'eql':
+                    result = 1 if literal1 == literal2 else 0
+                else:
+                    print(f"TODO {alu_inst}")
+                variable_map[alu_inst[1]] = deque([str(result)])
             else:
-                print(f"TODO {alu_inst}")
-            
-            new_eqn = '(' + old_eqn + operator + rhs + ')'
-            variable_map[alu_inst[1]] = new_eqn
-    return "0 = " + variable_map["z"]
+                if isinstance(alu_inst[2], int):
+                    rhs = str(alu_inst[2])
+                else:
+                    rhs = variable_map.get(alu_inst[2], deque(["0"]))
+
+                #add a b - Add the value of a to the value of b, then store the result in variable a.
+                if alu_inst[0] == 'add':
+                    operator = '+'
+                elif alu_inst[0] == 'mul':
+                    operator = '*'
+                elif alu_inst[0] == 'div':
+                    operator = "/"
+                elif alu_inst[0] == 'mod':
+                    operator = "%"
+                elif alu_inst[0] == 'eql':
+                    operator = "=="
+                else:
+                    print(f"TODO {alu_inst}")
+                new_eqn = old_eqn.copy()
+                new_eqn.appendleft('(')
+                new_eqn.append(operator)
+                new_eqn.extend(rhs)
+                new_eqn.append(')')
+                variable_map[alu_inst[1]] = new_eqn
+
+    return "0 = " + "".join(variable_map["z"])
 
 print(gen_final_expression(input))

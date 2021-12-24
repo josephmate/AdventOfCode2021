@@ -106,7 +106,7 @@ def is_hallway(posn):
     r,_ = posn
     return r == 1
 
-def get_moves_to_hallway(amphipod_map, move_from, depth):
+def get_moves_to_hallway(amphipod_map, move_from):
     (r,c) = move_from
     # something is blocking on the way out, so return nothing
     for d in range(r-1, 2-1,-1):
@@ -140,7 +140,7 @@ def get_moves_to_hallway(amphipod_map, move_from, depth):
 # ...B.....D.
 #   A C B .  
 #   A D C . 
-def get_move_into_room(amphipod_map, move_from):
+def get_move_into_room(amphipod_map, move_from, depth):
     letter = amphipod_map[(move_from)]
     if letter == 'A':
         column = 3
@@ -151,10 +151,21 @@ def get_move_into_room(amphipod_map, move_from):
     else:# letter == 'D':
         column = 9
 
-    # is anyone blocking the front position?
-    # then there's no way we can go to the front or back position
-    if (2,column) in amphipod_map:
+    # go in as far as possible
+    destination = None
+    for d in range(depth-1, 0-1, -1):
+        r = d + 2
+        if (r,column) not in amphipod_map:
+            destination = r
+            break
+    # Couldn't find a spot
+    if destination == None:
         return None
+
+    # is there anything blocking within the room?
+    for rr in range(r-1, 2-1, -1):
+        if (rr,column) in amphipod_map and amphipod_map[(rr,column)] != letter:
+            return None
     
     # is there anyone blocking the path on the way to the room?
     (r,c) = move_from
@@ -167,18 +178,13 @@ def get_move_into_room(amphipod_map, move_from):
             if (r,i) in amphipod_map:
                 return None
 
-    if (3,column) not in amphipod_map:
-        row = 3
-    else:
-        row = 2
-
-    return (letter, move_from, (row, column))
+    return (letter, move_from, (destination, column))
 
 def try_leaving_room(amphipod_map, c, depth) :
     for current_depth in range(0, depth):
         r = current_depth + 2
         if (r,c) in amphipod_map and not amphipod_map[(r,c)] == cave_map[(r,c)]:
-            return get_moves_to_hallway(amphipod_map,(r,c), depth)
+            return get_moves_to_hallway(amphipod_map,(r,c))
         elif (r,c) in amphipod_map:
             # matches, but is there anyone after that I need to move for?
             all_match = True
@@ -188,7 +194,7 @@ def try_leaving_room(amphipod_map, c, depth) :
                     all_match = False
                     break
             if not all_match or current_depth+1 == depth:
-                return get_moves_to_hallway(amphipod_map,(r,c), depth)
+                return get_moves_to_hallway(amphipod_map,(r,c))
     return []
 
 
@@ -202,7 +208,7 @@ def get_moves(amphipod_map, depth):
     for c in [1,2,4,6,8,10,11]:
         # if some one is in the halway
         if (1,c) in amphipod_map:
-            move = get_move_into_room(amphipod_map, (1,c))
+            move = get_move_into_room(amphipod_map, (1,c), depth)
             if not move == None:
                 moves.append(move)
 
@@ -320,3 +326,6 @@ print_map(unfolded_sample, 4)
 print()
 print_map(unfolded_input, 4)
 
+print("expected: 44169")
+(me, path) = min_energy(unfolded_sample, 4)
+print()

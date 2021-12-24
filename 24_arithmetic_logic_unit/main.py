@@ -129,7 +129,7 @@ def solve_pulp(alu_instructions):
         )
 
     for alu_inst in alu_instructions:
-        unresolved_variable_name = alu_instructions[1]
+        unresolved_variable_name = alu_inst[1]
         new_variable_count = variable_counter[unresolved_variable_name] + 1
         new_resolved_variable_name = unresolved_variable_name + "_" + str(new_variable_count)
         new_var = LpVariable(new_resolved_variable_name, None, None, LpInteger)
@@ -159,10 +159,23 @@ def solve_pulp(alu_instructions):
                 # even if you reformulate it to 
                 # new_var*alu_inst[2] == prev_var
                 # that doesn't work because it doesn't get the values that were rounded down
+                # but what does integer division really mean?
+                # it means:
+                # new_var*alu_inst[2] <= prev_var
+                # and
+                # new_var*(alu_inst[2]+1) > prev_var
                 problem += (
-                    new_var == prev_var // alu_inst[2]
+                    new_var*alu_inst[2] <= prev_var
+                )
+                problem += (
+                    # TypeError: '>' not supported between instances of 'LpAffineExpression' and 'LpVariable'
+                    # so need to use >= somehow
+                    # since it's integer we can reduce by 1
+                    # and that should get us the <=
+                    prev_var <= new_var*(alu_inst[2]+1)-1
                 )
             elif alu_inst[0] == 'mod':
+                continue
                 # modulus not implemented in pulp :(
                 problem += (
                     new_var == prev_var % alu_inst[2]
@@ -177,5 +190,8 @@ def solve_pulp(alu_instructions):
             print("TODO")
 
         variable_counter[unresolved_variable_name] = new_variable_count
+
+
+solve_pulp(input)
 
 # so integer programming won't work so now back to the drawing board

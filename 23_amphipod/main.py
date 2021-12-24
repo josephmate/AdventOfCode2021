@@ -9,8 +9,9 @@ from collections import deque
 from typing import OrderedDict
 import math
 from heapq import *
+import time
 
-debug = True
+
 
 # on x=10..12,y=10..12,z=10..12
 # off x=9..11,y=9..11,z=9..11
@@ -278,7 +279,10 @@ def min_energy(amphipod_map, depth):
 
 
 print("expected: 12521")
+start = time.time()
 (me, path) = min_energy(sample, 2)
+end = time.time()
+print(end - start)
 print(f"actual:   {me}")
 
 def print_path(path, amphipod_map, depth):
@@ -321,11 +325,12 @@ def unfold(amphipod_map):
 unfolded_sample = unfold(sample)
 unfolded_input = unfold(input)
 
-print()
-print_map(unfolded_sample, 4)
-print()
-print_map(unfolded_input, 4)
 
-print("expected: 44169")
+
+start = time.time()
 (me, path) = min_energy(unfolded_sample, 4)
+end = time.time()
+print(end - start)
+print("expected: 44169")
+print(f"actual:   {me}")
 print()

@@ -229,13 +229,13 @@ def solve_pulp(alu_instructions):
 # I cannot get integer programming to work with modulus
 # and cannot figure out a workaround so back to the
 # drawing board
-
+debug = False
 def gen_final_expression(alu_instructions):
     model_counter = 0
     variable_map = {}
     idx = 0
     for alu_inst in alu_instructions:
-        if idx == 20:
+        if debug and idx == 200:
             print("".join(variable_map.get("w", ["0"])))
             print("".join(variable_map.get("x", ["0"])))
             print("".join(variable_map.get("y", ["0"])))
@@ -245,17 +245,48 @@ def gen_final_expression(alu_instructions):
         idx += 1
         if len(alu_inst) == 2:
             # inp a - Read an input value and write it to variable a.
-            variable_map[alu_inst[1]] = deque(["model_" + str(model_counter)])
+            variable_map[alu_inst[1]] = deque(["m" + str(model_counter)])
             model_counter += 1
-        # optimizations to reduce equation size
         else:
             old_eqn = variable_map.get(alu_inst[1], deque(["0"]))
 
-            # optimizations
-            if alu_inst[0] == 'mul' and isinstance(alu_inst[2], int) and alu_inst[2] == 0:
+            # optimizations to reduce equation size
+            if (alu_inst[0] == 'mul'
+                and (
+                    (isinstance(alu_inst[2], int) and alu_inst[2] == 0)
+                    or (
+                        len(variable_map.get(alu_inst[2], deque(["0"]))) == 1
+                        and variable_map.get(alu_inst[2], deque(["0"]))[0] == "0"
+                    )
+                    or (
+                        len(variable_map.get(alu_inst[1], deque(["0"]))) == 1
+                        and variable_map.get(alu_inst[1], deque(["0"]))[0] == "0"
+                    )
+                )
+            ):
                 # a * 0 = 0
+                # 0 * b = 0
                 variable_map[alu_inst[1]] = deque(["0"])
-            if (
+            elif(alu_inst[0] == 'add'
+                and (
+                    (isinstance(alu_inst[2], int) and alu_inst[2] == 0)
+                    or (
+                        len(variable_map.get(alu_inst[2], deque(["0"]))) == 1
+                        and variable_map.get(alu_inst[2], deque(["0"]))[0] == "0"
+                    )
+                )
+            ):
+                # a + 0 = a
+                variable_map[alu_inst[1]] = variable_map[alu_inst[1]]
+            elif(alu_inst[0] == 'add'
+                and (
+                    len(variable_map.get(alu_inst[1], deque(["0"]))) == 1
+                    and variable_map.get(alu_inst[1], deque(["0"]))[0] == "0"
+                )
+            ):
+                # 0 + b = b
+                variable_map[alu_inst[1]] = variable_map[alu_inst[2]]
+            elif (
                 (
                     isinstance(alu_inst[2], int)
                     or (
@@ -314,3 +345,5 @@ def gen_final_expression(alu_instructions):
     return "0 = " + "".join(variable_map["z"])
 
 print(gen_final_expression(input))
+
+# 0 = m13*((((m12*((((m11*((((m10*((((m9*((((m8*((((m7*((((m6*((((m5*((((m4*((((m3*((((m2*((((m1*((((m0*((0==m0)==0))%26)==m1)==0))%26)==m2)==0))%26)==m3)==0))%26)==m4)==0))%26)==m5)==0))%26)==m6)==0))%26)==m7)==0))%26)==m8)==0))%26)==m9)==0))%26)==m10)==0))%26)==m11)==0))%26)==m12)==0))%26)==m13)==0)

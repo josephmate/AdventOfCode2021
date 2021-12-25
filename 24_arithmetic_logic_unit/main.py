@@ -235,7 +235,7 @@ def gen_final_expression(alu_instructions):
     variable_map = {}
     idx = 0
     for alu_inst in alu_instructions:
-        if idx == 5:
+        if idx == 20:
             print("".join(variable_map.get("w", ["0"])))
             print("".join(variable_map.get("x", ["0"])))
             print("".join(variable_map.get("y", ["0"])))
@@ -255,10 +255,23 @@ def gen_final_expression(alu_instructions):
             if alu_inst[0] == 'mul' and isinstance(alu_inst[2], int) and alu_inst[2] == 0:
                 # a * 0 = 0
                 variable_map[alu_inst[1]] = deque(["0"])
-            if isinstance(alu_inst[2], int) and len(old_eqn) == 1 and old_eqn[0].isnumeric:
+            if (
+                (
+                    isinstance(alu_inst[2], int)
+                    or (
+                        len(variable_map.get(alu_inst[2], deque(["0"]))) == 1
+                        and variable_map.get(alu_inst[2], deque(["0"]))[0].isnumeric()
+                    )
+                )
+                and len(old_eqn) == 1
+                and old_eqn[0].isnumeric()
+            ):
                 # literal op literal = literal
                 literal1 = int(old_eqn[0])
-                literal2 = int(alu_inst[2])
+                if isinstance(alu_inst[2], int):
+                    literal2 = int(alu_inst[2])
+                else:
+                    literal2 = int(variable_map.get(alu_inst[2], deque(["0"]))[0])
                 if alu_inst[0] == 'add':
                     result = literal1 + literal2
                 elif alu_inst[0] == 'mul':

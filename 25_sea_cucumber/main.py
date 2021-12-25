@@ -30,25 +30,37 @@ print("\n".join(map(lambda l: ''.join(l), sample2)))
 
 
 
-def simulate_steps(map, steps):
-    for _ in range(0, steps):
+def simulate_steps(map, steps = None):
+    step = 0
+    while True:
+        if steps != None:
+            if step >= steps:
+                break
+        step += 1
+
+        noone_moved = True
+
         next_map = copy.deepcopy(map)
         # move east herd
         for i in range(len(map)):
             for j in range(len(map[i])):
                 if map[i][j] == '>' and map[i][(j+1)%len(map[i])] == '.':
+                    noone_moved = False
                     next_map[i][j] = '.'
-                    next_map[i][(j+1)%len(map[j])] = '>'
+                    next_map[i][(j+1)%len(map[i])] = '>'
         map = next_map
         next_map = copy.deepcopy(map)
         # move south herd
         for i in range(len(map)):
             for j in range(len(map[i])):
                 if map[i][j] == 'v' and map[(i+1)%len(map)][j] == '.':
+                    noone_moved = False
                     next_map[i][j] = '.'
                     next_map[(i+1)%len(map)][j] = 'v'
         map = next_map
-    return map
+        if noone_moved:
+            break
+    return (step, map)
 
 
 
@@ -64,9 +76,15 @@ v......"""
 print("Expected:")
 print(expected)
 print()
-actual = simulate_steps(sample1, 4)
+(_, actual) = simulate_steps(sample1, 4)
 actual = "\n".join(map(lambda l: ''.join(l), actual))
 print("Actual:")
 print(actual)
 assert expected == actual
 
+(steps, actual) = simulate_steps(sample2)
+print(f"Expected: {58}")
+print(f"Actual:   {steps}")
+print()
+(steps, actual) = simulate_steps(input)
+print(steps)

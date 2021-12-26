@@ -512,10 +512,11 @@ print("".join(variable_map.get("y", ["0"])))
 print("".join(variable_map.get("z", ["0"])))
 print()
 
-# now my optimizations do very little
+# after fixing my bugs, my optimizations do very little
+# to reduce the length of the equation
 # looks like there is a lot of stuff to solve
-#variable_map = gen_final_expression(input)
-#print("0 = " + "".join(variable_map["z"]))
+# variable_map = gen_final_expression(input)
+# print("0 = " + "".join(variable_map["z"]))
 
 INPUT = 0
 ADD = 1
@@ -659,3 +660,59 @@ def find_monad_slow(alu_instructions):
 
 # running the program 9^14 times will take 5 years :(
 #find_monad_slow(input)
+
+# break up the lines by input to check if there
+# is any difference
+lines = []
+with open('input.txt') as reader:
+    for line in reader:
+        line = line.rstrip()
+        lines.append(line)
+
+split_by_input = []
+current_split = []
+for line in lines:
+    if line.startswith("inp"):
+        if len(current_split) > 0:
+             split_by_input.append(current_split)
+        current_split = []
+    current_split.append(line)
+if len(current_split) > 0:
+    split_by_input.append(current_split)
+
+longest_split = max(map(lambda split: len(split), split_by_input))
+longest_line = max(map(lambda s: len(s), lines))
+
+for r in range(0, longest_split):
+    for c in range(0, len(split_by_input)):
+        if r < len(split_by_input[c]):
+            line = split_by_input[c][r]
+        else:
+            line = ""
+        suffix = ""
+        for i in range(0, longest_line - len(line) + 3):
+            suffix += " "
+        print(f"{line}{suffix}", end="")
+    print()
+
+# each input follows the pattern:
+# inp w        # load next input
+# mul x 0      # x register to 0
+# add x z      # copy whatever is accumuated so far from z to x
+# mod x 26
+# div z 1      # sometimes this is 1, sometimes this is 26
+#              # div by 1 does nothing
+#              # mod by 26 then div by 26 is always 0
+# add x 12     # this is a random number
+# eql x w
+# eql x 0
+# mul y 0
+# add y 25
+# mul y x
+# add y 1
+# mul z y
+# mul y 0
+# add y w
+# add y 1
+# mul y x
+# add z y

@@ -722,8 +722,79 @@ for r in range(0, longest_split):
 # psuedo code of above instructions
 # (order of instructions won't match to make the pseudocode
 # easier to understand)
-# x = (z % 26) + _R_  # (mul x 0) and (add x z) and (mod x 26) and (add x _R_)
-# z = z // _Q_        # div z _Q_
-# if x != input[c++]     # (inp w) and
-# y =                # mul y 0
-# 
+# x = (z % 26) + _R_     # (mul x 0) and (add x z) and (mod x 26) and (add x _R_)
+# z = z // _Q_           # div z _Q_
+# if x != input[c]       # (inp w) and
+#   y = 26               # (mul y 0) and (add y 25) and (mul y x) and (add y 1)
+# else
+#   y = 1                # (mul y 0) and (add y 25) and (mul y x) and (add y 1)
+# if x != input[c]
+#   z = (z*y) + (input[c]+_S_)    # (mul z y) and (mul y 0) and (add y w) and (add y _S_) and mul y x
+# else
+#   z = (z*y)                       # (mul z y) and (mul y 0) and (add y w) and (add y _S_) and mul y x
+# c++
+#
+# input = model numbers
+# _Q_ = [1, 1, 1, 26, 1, 1, 26, 1, 26, 1 , 26, 26, 26, 26]
+# _R_ = [12, 13, 12, -13, 11, 15, -14, 12, -8, 14, -9, -11, -6, -5]
+# _S_ = [1, 9, 11, 6, 6, 1, 13, 5, 7, 2, 10, 14, 7, 1]
+# prev = 0
+# def is_valid():
+#   for i in range(0, len(model_numbers)):
+#     prev = one_digit(prev, input[i], _Q_[i], _R_[i], _S_[i])
+#   return prev == 0
+# def one_digit(prev, input, _Q_, _R_, _S_)
+#   remainder = (prev % 26) + _R_
+#   quotient = prev // _Q_
+#   if remainder != input
+#     return (quotient*26) + (input+_S_)
+#   else
+#     return quotient
+# return z
+#
+# that means quotentent on the last iteration must be 0
+
+def one_digit(prev, input, q, r, s):
+   remainder = (prev % 26) + r
+   if remainder != input:
+     return (prev // q)*26 + (input + s)
+   else:
+     return prev // q
+
+Q = [1, 1, 1, 26, 1, 1, 26, 1, 26, 1 , 26, 26, 26, 26]
+R = [12, 13, 12, -13, 11, 15, -14, 12, -8, 14, -9, -11, -6, -5]
+S = [1, 9, 11, 6, 6, 1, 13, 5, 7, 2, 10, 14, 7, 1]
+def is_valid_faster(inputs):
+    prev = 0
+    for i in range(0, len(inputs)):
+        prev = one_digit(prev, inputs[i], Q[i], R[i], S[i])
+    return prev == 0
+
+
+def find_monad_faster():
+    for a in range (9, 1-1, -1):                     # 1 :                 5.3 years
+        for b in range (9, 1-1, -1):                 # 2 :               215 days
+            for c in range (9, 1-1, -1):             # 3 : 2.1 days       23.9203125 days
+             for d in range (9, 1-1, -1):            # 4 : 5.67 hours     63.7875 hours
+                for e in range (9, 1-1, -1):         # 5 : 37.8 minutes   7.0875 hours
+                    for f in range (9, 1-1, -1):     # 6 : 4.2 minutes    47.25 minutes
+                        for g in range (9, 1-1, -1): # 7 : 28 seconds     315 seconds per loop (5.25 min)
+                            print(g)
+                            start = current_time()
+                            for h in range (9, 1-1, -1): # 8 : 35 seconds per loop
+                                for i in range (9, 1-1, -1): # 9 : 4 seconds per loop
+                                    for j in range (9, 1-1, -1): # 10
+                                        for k in range (9, 1-1, -1): # 11
+                                            for l in range (9, 1-1, -1): # 12
+                                                for m in range (9, 1-1, -1): # 13
+                                                    for n in range (9, 1-1, -1): # 14
+                                                        if is_valid_faster([a, b, c, d, e, f, g, h, i, j, k, l, m, n]):
+                                                            return [a, b, c, d, e, f, g, h, i, j, k, l, m, n]
+                            end = current_time()
+                            print(end-start)
+    return None
+
+#print(find_monad_faster())
+# still too slow
+# my constant factor didn't make a big enough dent
+# I was hoping for 1000x constant factor

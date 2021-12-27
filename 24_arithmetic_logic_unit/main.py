@@ -700,19 +700,30 @@ for r in range(0, longest_split):
 # mul x 0      # x register to 0
 # add x z      # copy whatever is accumuated so far from z to x
 # mod x 26
-# div z 1      # sometimes this is 1, sometimes this is 26
-#              # div by 1 does nothing
-#              # mod by 26 then div by 26 is always 0
-# add x 12     # this is a random number
-# eql x w
-# eql x 0
-# mul y 0
-# add y 25
-# mul y x
-# add y 1
-# mul z y
-# mul y 0
-# add y w
-# add y 1
-# mul y x
-# add z y
+# div z _Q_    # Q = [1, 1, 1, 26, 1, 1, 26, 1, 26, 1 , 26, 26, 26, 26]
+#                # div by 1 does nothing
+#                # div by 26
+# add x _R_    # this is a random number for each input [12, 13, 12, -13, 11, 15, -14, 12, -8, 14, -9, -11, -6, -5]
+# eql x w      # x == w?
+# eql x 0      # x != w? (this line plus previous line)
+# mul y 0      # clear y
+# add y 25     # set y to 25 always
+# mul y x      # if x != w then leave y alone
+#              # else y = 0
+# add y 1      # y++
+# mul z y      # if x != w then z*y
+#              # else leave z alone
+# mul y 0      # clear y
+# add y w      # set y = w
+# add y _S_    # y = w+S   s=[1, 9, 11, 6, 6, 1, 13, 5, 7, 2, 10, 14, 7, 1]
+# mul y x      # y = x*(w+S)
+# add z y      # z += x*(w+S)
+
+# psuedo code of above instructions
+# (order of instructions won't match to make the pseudocode
+# easier to understand)
+# x = (z % 26) + _R_  # (mul x 0) and (add x z) and (mod x 26) and (add x _R_)
+# z = z // _Q_        # div z _Q_
+# if x != input[c++]     # (inp w) and
+# y =                # mul y 0
+# 

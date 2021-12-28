@@ -768,12 +768,12 @@ def is_valid_faster(inputs):
     prev = 0
     for i in range(0, len(inputs)):
         prev = one_digit(prev, inputs[i], Q[i], R[i], S[i])
-    return prev == 0
+    return prev
 
 
 def find_monad_faster():
-    for a in range (9, 1-1, -1):                     # 1 :                 5.3 years
-        for b in range (9, 1-1, -1):                 # 2 :               215 days
+    for a in range (9, 1-1, -1):                     # 1 : 172 days       5.3 years
+        for b in range (9, 1-1, -1):                 # 2 : 19 days        215 days
             for c in range (9, 1-1, -1):             # 3 : 2.1 days       23.9203125 days
              for d in range (9, 1-1, -1):            # 4 : 5.67 hours     63.7875 hours
                 for e in range (9, 1-1, -1):         # 5 : 37.8 minutes   7.0875 hours
@@ -788,7 +788,7 @@ def find_monad_faster():
                                             for l in range (9, 1-1, -1): # 12
                                                 for m in range (9, 1-1, -1): # 13
                                                     for n in range (9, 1-1, -1): # 14
-                                                        if is_valid_faster([a, b, c, d, e, f, g, h, i, j, k, l, m, n]):
+                                                        if is_valid_faster([a, b, c, d, e, f, g, h, i, j, k, l, m, n]) == 0:
                                                             return [a, b, c, d, e, f, g, h, i, j, k, l, m, n]
                             end = current_time()
                             print(end-start)
@@ -798,3 +798,130 @@ def find_monad_faster():
 # still too slow
 # my constant factor didn't make a big enough dent
 # I was hoping for 1000x constant factor
+# As an experiment, re-implementing it in C brought it down from 172 to 58 days
+# I could multi core this an bring it down to 58/4 = 14.5 days
+# that's still too long
+
+
+
+def find_1_digit_monad(alu_instructions):
+    efficient_instructions = make_efficient_instructions(alu_instructions)
+    for a in range (9, 1-1, -1):
+        result_slow = run_instructions(
+            efficient_instructions,
+            [a]
+        )[3]
+        result_faster =  is_valid_faster([a])
+        print(f"{a} {result_slow} {result_faster}")
+def find_2_digit_monad(alu_instructions):
+    efficient_instructions = make_efficient_instructions(alu_instructions)
+    for a in range (9, 1-1, -1):
+        for b in range (9, 1-1, -1):
+            result_slow = run_instructions(
+                efficient_instructions,
+                [a,b]
+            )[3]
+            result_faster =  is_valid_faster([a,b])
+            print(f"{a} {b} {result_slow} {result_faster}")
+
+def find_n_digit_monad_impl(efficient_instructions, digits, deque_so_far, result):
+    if digits == len(deque_so_far):
+        result_slow = run_instructions(
+                efficient_instructions,
+                list(deque_so_far)
+            )[3]
+        result_faster =  is_valid_faster(list(deque_so_far))
+        result.append((list(deque_so_far), result_slow, result_faster))
+    else:
+        for i in range(9, 1-1, -1):
+            deque_so_far.append(i)
+            find_n_digit_monad_impl(efficient_instructions, digits, deque_so_far, result)
+            deque_so_far.pop()
+
+def find_n_digit_monad(alu_instructions, digits):
+    efficient_instructions = make_efficient_instructions(alu_instructions)
+    result = []
+    find_n_digit_monad_impl(efficient_instructions, digits, deque(), result)
+    return result
+
+results = find_n_digit_monad(input[0:18*1], 1)
+print("\n".join(map(lambda t: str(t), results)))
+print()
+results = find_n_digit_monad(input[0:18*2], 2)
+print("\n".join(map(lambda t: str(t), results)))
+print()
+results = find_n_digit_monad(input[0:18*3], 3)
+print("\n".join(map(lambda t: str(t), results)))
+print()
+results = find_n_digit_monad(input[0:18*4], 4)
+print("\n".join(map(lambda t: str(t), results)))
+print()
+# i notice some are siginficantly smaller than 1000, so I keep those
+# examples:
+# ([1, 1, 3, 4], 1622, 1622)
+# ([1, 1, 3, 3], 1621, 1621)
+# ([1, 1, 3, 2], 1620, 1620)
+# ([1, 1, 3, 1], 62, 62)
+# ([1, 1, 2, 9], 1627, 1627)
+# ([1, 1, 2, 8], 1626, 1626)
+# ([1, 1, 2, 7], 1625, 1625)
+# ([1, 1, 2, 6], 1624, 1624)
+
+def find_n_digit_monad_subset(alu_instructions, digits, subset):
+    efficient_instructions = make_efficient_instructions(alu_instructions)
+    result = []
+    for tup in subset:
+        find_n_digit_monad_impl(efficient_instructions, digits, deque(tup[0]), result)
+    return result
+
+potential_results = list(filter(lambda t: t[1] < 1000, results))
+
+
+#      1  2  3  4   5  6  7   8   9 10   11  12  13  14
+# Q = [1, 1, 1, 26, 1, 1, 26, 1, 26, 1 , 26, 26, 26, 26]
+# first reduction was at 4,
+# next will be at 7...
+results = find_n_digit_monad_subset(input[0:18*7], 7, potential_results)
+potential_results = list(filter(lambda t: t[1] < 2000, results))
+#potential_results = list(filter(lambda t: t[1] < 10000, results))
+print("\n".join(map(lambda t: str(t), potential_results)))
+print(len(potential_results))
+
+# then 9
+results = find_n_digit_monad_subset(input[0:18*9], 9, potential_results)
+potential_results = list(filter(lambda t: t[1] < 2000, results))
+print("\n".join(map(lambda t: str(t), potential_results)))
+print(len(potential_results))
+# then 11
+results = find_n_digit_monad_subset(input[0:18*11], 11, potential_results)
+potential_results = list(filter(lambda t: t[1] < 2000, results))
+print("\n".join(map(lambda t: str(t), potential_results)))
+print(len(potential_results))
+# then 12
+results = find_n_digit_monad_subset(input[0:18*12], 12, potential_results)
+potential_results = list(filter(lambda t: t[1] < 2000, results))
+print("\n".join(map(lambda t: str(t), potential_results)))
+print(len(potential_results))
+# then 13
+results = find_n_digit_monad_subset(input[0:18*13], 13, potential_results)
+potential_results = list(filter(lambda t: t[1] < 2000, results))
+print("\n".join(map(lambda t: str(t), potential_results)))
+print(len(potential_results))
+# then 14
+results = find_n_digit_monad_subset(input[0:18*14], 14, potential_results)
+potential_results = list(filter(lambda t: t[1] < 2000, results))
+print("\n".join(map(lambda t: str(t), potential_results)))
+print(len(potential_results))
+
+valid_results = list(filter(lambda t: t[1] == 0 , potential_results))
+print("\n".join(map(lambda t: str(t), valid_results)))
+print(len(valid_results))
+
+print("result")
+print(
+max(
+    map(lambda s: int(s),
+    map(lambda arr: ''.join(arr),
+    map(lambda tup: tup[0],
+    valid_results))))
+)

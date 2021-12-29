@@ -141,6 +141,25 @@ def get_moves_to_hallway(amphipod_map, move_from):
 # ...B.....D.
 #   A C B .  
 #   A D C . 
+#
+# This is also not a valid move sine there is
+# a different amphipod in the B room:
+# A..B...A.DB
+#   . . . .  
+#   D B C .  
+#   D B C C  
+#   A D C A  
+#
+# ('B', (1, 4), (2, 5), 20, 3382)
+# A......A.DB
+#   . B . .  
+#   D B C .  
+#   D B C C  
+#   A D C A
+# "Amphipods will never move from the hallway into a room
+# unless that room is their destination room and that room
+# contains no amphipods which do not also have that room as
+# their own destination."
 def get_move_into_room(amphipod_map, move_from, depth):
     letter = amphipod_map[(move_from)]
     if letter == 'A':
@@ -151,6 +170,13 @@ def get_move_into_room(amphipod_map, move_from, depth):
         column = 7
     else:# letter == 'D':
         column = 9
+
+    # are any different amphipod in the destination room:
+    for d in range(depth-1, 0-1, -1):
+        r = d + 2
+        if (r,column) in amphipod_map:
+            if amphipod_map[(r, column)] != letter:
+                return None
 
     # go in as far as possible
     destination = None
@@ -282,12 +308,12 @@ print("expected: 12521")
 start = time.time()
 (me, path) = min_energy(sample, 2)
 end = time.time()
-print(end - start)
+print(f"{end - start} seconds")
 print(f"actual:   {me}")
 
 def print_path(path, amphipod_map, depth):
     amphipod_map = amphipod_map.copy()
-    print_map(amphipod_map, 2)
+    print_map(amphipod_map, depth)
     for step in path:
         print()
         print(str(step))
@@ -330,7 +356,16 @@ unfolded_input = unfold(input)
 start = time.time()
 (me, path) = min_energy(unfolded_sample, 4)
 end = time.time()
-print(end - start)
+#print_path(path, unfolded_sample, 4)
+print(f"{end - start} seconds")
 print("expected: 44169")
+print(f"actual:   {me}")
+print()
+
+start = time.time()
+(me, path) = min_energy(unfolded_input, 4)
+end = time.time()
+#print_path(path, unfolded_sample, 4)
+print(f"{end - start} seconds")
 print(f"actual:   {me}")
 print()

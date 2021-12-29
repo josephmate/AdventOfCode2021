@@ -568,13 +568,7 @@ def make_efficient_instructions(alu_instructions):
 
     return efficient_instructions
 
-def run_instructions(efficient_instructions, function_input):
-    registers = [
-        0,
-        0,
-        0,
-        0,
-    ]
+def run_instructions(efficient_instructions, function_input, registers=[0,0,0,0]):
     input_idx = 0
     for inst in efficient_instructions:
         inst_type = inst[0]
@@ -802,65 +796,6 @@ def find_monad_faster():
 # I could multi core this an bring it down to 58/4 = 14.5 days
 # that's still too long
 
-
-
-def find_1_digit_monad(alu_instructions):
-    efficient_instructions = make_efficient_instructions(alu_instructions)
-    for a in range (9, 1-1, -1):
-        result_slow = run_instructions(
-            efficient_instructions,
-            [a]
-        )[3]
-        result_faster =  is_valid_faster([a])
-        print(f"{a} {result_slow} {result_faster}")
-def find_2_digit_monad(alu_instructions):
-    efficient_instructions = make_efficient_instructions(alu_instructions)
-    for a in range (9, 1-1, -1):
-        for b in range (9, 1-1, -1):
-            result_slow = run_instructions(
-                efficient_instructions,
-                [a,b]
-            )[3]
-            result_faster =  is_valid_faster([a,b])
-            print(f"{a} {b} {result_slow} {result_faster}")
-
-def find_n_digit_monad_impl(efficient_instructions, digits, deque_so_far, result, filter=1000000):
-    if digits == len(deque_so_far):
-        result_slow = run_instructions(
-                efficient_instructions,
-                list(deque_so_far)
-            )[3]
-        result_faster =  is_valid_faster(list(deque_so_far))
-        if (result_slow < filter):
-            result.append((list(deque_so_far), result_slow, result_faster))
-    else:
-        for i in range(9, 1-1, -1):
-            deque_so_far.append(i)
-            find_n_digit_monad_impl(efficient_instructions, digits, deque_so_far, result)
-            deque_so_far.pop()
-
-def find_n_digit_monad(alu_instructions, digits):
-    efficient_instructions = make_efficient_instructions(alu_instructions)
-    result = []
-    find_n_digit_monad_impl(efficient_instructions, digits, deque(), result)
-    return result
-
-results = find_n_digit_monad(input[0:18*1], 1)
-#print("\n".join(map(lambda t: str(t), results)))
-print(f"all 1 {len(results)}")
-print()
-results = find_n_digit_monad(input[0:18*2], 2)
-#print("\n".join(map(lambda t: str(t), results)))
-print(f"all 2 {len(results)}")
-print()
-results = find_n_digit_monad(input[0:18*3], 3)
-#print("\n".join(map(lambda t: str(t), results)))
-print(f"all 3 {len(results)}")
-print()
-results = find_n_digit_monad(input[0:18*4], 4)
-#print("\n".join(map(lambda t: str(t), results)))
-print(f"all 4 {len(results)}")
-print()
 # i notice some are siginficantly smaller than 1000, so I keep those
 # examples:
 # ([1, 1, 3, 4], 1622, 1622)
@@ -872,39 +807,72 @@ print()
 # ([1, 1, 2, 7], 1625, 1625)
 # ([1, 1, 2, 6], 1624, 1624)
 
-def find_n_digit_monad_subset(alu_instructions, digits, subset, filter):
+def find_n_digit_monad_impl(
+    efficient_instructions,
+    digits,
+    start,   # 0 to 13
+    end,     # 1 to 14
+    registers,
+    deque_so_far,
+    result,
+    filters):
+    if digits == len(deque_so_far):
+        new_registers = run_instructions(
+                efficient_instructions[start*18:end*18],
+                list(deque_so_far)[start:end],
+                registers.copy()
+        )
+        
+        if (new_registers[3] < filters[len(deque_so_far) - 1]):
+            result.append((list(deque_so_far), new_registers))
+    else:
+        for i in range(9, 1-1, -1):
+            deque_so_far.append(i)
+            find_n_digit_monad_impl(efficient_instructions, digits, start, end, registers, deque_so_far, result, filters)
+            deque_so_far.pop()
+
+efficient_input = make_efficient_instructions(input)
+
+def find_n_digit_monad_subset(alu_instructions, start, end, digits, subset, filters):
+    if len(subset) == 0:
+        subset = [([], [0,0,0,0])]
     efficient_instructions = make_efficient_instructions(alu_instructions)
     result = []
     for tup in subset:
-        find_n_digit_monad_impl(efficient_instructions, digits, deque(tup[0]), result, filter)
+        find_n_digit_monad_impl(
+            efficient_instructions,
+            digits,
+            start,
+            end,
+            tup[1],
+            deque(tup[0]),
+            result,
+            filters)
     return result
 
-results = find_n_digit_monad(input[0:18*3], 3)
-
-#      1  2  3  4   5  6  7   8   9 10   11  12  13  14
-# Q = [1, 1, 1, 26, 1, 1, 26, 1, 26, 1 , 26, 26, 26, 26]
-results = find_n_digit_monad_subset(input[0:18* 4], 4, results, 26**6)
-print(f"filtered 4 {len(results)}")
-results = find_n_digit_monad_subset(input[0:18* 7], 7, results, 26**5)
-print(f"filtered 7 {len(results)}")
-results = find_n_digit_monad_subset(input[0:18* 9], 9, results, 26**4)
-print(f"filtered 9 {len(results)}")
-results = find_n_digit_monad_subset(input[0:18*11],11, results, 26**3)
-print(f"filtered 11 {len(results)}")
-results = find_n_digit_monad_subset(input[0:18*12],12, results, 26**2)
-print(f"filtered 12 {len(results)}")
-results = find_n_digit_monad_subset(input[0:18*13],13, results, 26**1)
-print(f"filtered 13 {len(results)}")
-results = find_n_digit_monad_subset(input[0:18*14],14, results, 26**0)
+#              1      2      3      4      5      6      7      8      9    10      11      12     13    14
+# Q =         [1,     1,     1,    26,    1,      1,    26,     1,    26,    1,     26,     26,    26,   26]
+filtering = [26**7, 26**7, 26**7, 26**6, 26**6, 26**6, 26**5, 26**5, 26**4, 26**4, 26**3, 26**2, 26**1, 26**0]
+results = []
+for i in range(1, 14+1):
+    start = current_time()
+    results = find_n_digit_monad_subset(input, i-1, i, i, results, filtering)
+    end = current_time()
+    print(f"filtered {i} {len(results)} {9**i} {end-start} secs")
 
 print("\n".join(map(lambda t: str(t), results)))
-print(f"filtered 14 {len(results)}")
-
 print("result")
 print(
 max(
     map(lambda s: int(s),
-    map(lambda arr: ''.join(arr),
+    map(lambda arr: ''.join(map(lambda i: str(i), arr)),
+    map(lambda tup: tup[0],
+    results))))
+)
+print(
+min(
+    map(lambda s: int(s),
+    map(lambda arr: ''.join(map(lambda i: str(i), arr)),
     map(lambda tup: tup[0],
     results))))
 )

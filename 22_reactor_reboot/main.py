@@ -317,11 +317,12 @@ print()
 
 
 def partition_count_impl(steps, x1, x2, y1, y2, z1, z2, intersects_by_volume, min_vol=1):
-    intersect_count = 0
+    intersect_steps = []
     for step in steps:
         if is_intersecting(step, (0, x1, x2, y1, y2, z1, z2)):
-            intersect_count += 1
+            intersect_steps.append(step)
     
+    intersect_count = len(intersect_steps)
     volume = (x2-x1+1) * (y2-y1+1) * (z2-z1+1)
     if intersect_count <= 3 or volume <= min_vol:
         intersects_by_volume[intersect_count] = intersects_by_volume.get(intersect_count, 0) + volume
@@ -369,14 +370,14 @@ def partition_count_impl(steps, x1, x2, y1, y2, z1, z2, intersects_by_volume, mi
         y_mid = y_delta + y1
         z_mid = z_delta + z1
         # since we're in 3 dimensions, instead of 4 squares, we have 8 cubes
-        partition_count_impl(steps,      x1, x_mid,      y1, y_mid,      z1, z_mid, intersects_by_volume, min_vol)
-        partition_count_impl(steps,      x1, x_mid,      y1, y_mid, z_mid+1,    z2, intersects_by_volume, min_vol)
-        partition_count_impl(steps,      x1, x_mid, y_mid+1,    y2,      z1, z_mid, intersects_by_volume, min_vol)
-        partition_count_impl(steps,      x1, x_mid, y_mid+1,    y2, z_mid+1,    z2, intersects_by_volume, min_vol)
-        partition_count_impl(steps, x_mid+1,    x2,      y1, y_mid,      z1, z_mid, intersects_by_volume, min_vol)
-        partition_count_impl(steps, x_mid+1,    x2,      y1, y_mid, z_mid+1,    z2, intersects_by_volume, min_vol)
-        partition_count_impl(steps, x_mid+1,    x2, y_mid+1,    y2,      z1, z_mid, intersects_by_volume, min_vol)
-        partition_count_impl(steps, x_mid+1,    x2, y_mid+1,    y2, z_mid+1,    z2, intersects_by_volume, min_vol)
+        partition_count_impl(intersect_steps,      x1, x_mid,      y1, y_mid,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_count_impl(intersect_steps,      x1, x_mid,      y1, y_mid, z_mid+1,    z2, intersects_by_volume, min_vol)
+        partition_count_impl(intersect_steps,      x1, x_mid, y_mid+1,    y2,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_count_impl(intersect_steps,      x1, x_mid, y_mid+1,    y2, z_mid+1,    z2, intersects_by_volume, min_vol)
+        partition_count_impl(intersect_steps, x_mid+1,    x2,      y1, y_mid,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_count_impl(intersect_steps, x_mid+1,    x2,      y1, y_mid, z_mid+1,    z2, intersects_by_volume, min_vol)
+        partition_count_impl(intersect_steps, x_mid+1,    x2, y_mid+1,    y2,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_count_impl(intersect_steps, x_mid+1,    x2, y_mid+1,    y2, z_mid+1,    z2, intersects_by_volume, min_vol)
 
 
 

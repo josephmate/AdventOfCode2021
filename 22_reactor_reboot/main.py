@@ -322,11 +322,10 @@ def partition_count_impl(steps, x1, x2, y1, y2, z1, z2, intersects_by_volume, mi
         if is_intersecting(step, (0, x1, x2, y1, y2, z1, z2)):
             intersect_count += 1
     
-    volume = (x2-x1) * (y2-y1) * (z2-z1)
+    volume = (x2-x1+1) * (y2-y1+1) * (z2-z1+1)
     if intersect_count <= 3 or volume <= min_vol:
         intersects_by_volume[intersect_count] = intersects_by_volume.get(intersect_count, 0) + volume
     else:
-        print(volume)
         # x1=10, x2=13, y1=10,y2=13
         # 10 11 12 13
         # 11  a  a  a
@@ -363,9 +362,9 @@ def partition_count_impl(steps, x1, x2, y1, y2, z1, z2, intersects_by_volume, mi
         # 10, 11   12,12
         # 12, 12   10,11
         # 12, 12   12,12
-        x_delta = (x2-x1)/2
-        y_delta = (y2-y1)/2
-        z_delta = (z2-z1)/2
+        x_delta = (x2-x1)//2
+        y_delta = (y2-y1)//2
+        z_delta = (z2-z1)//2
         x_mid = x_delta + x1
         y_mid = y_delta + y1
         z_mid = z_delta + z1
@@ -387,6 +386,13 @@ def partition_count(steps, min_vol=1):
     partition_count_impl(steps, min_x, max_x, min_y, max_y, min_z, max_z, intersects_by_volume, min_vol)
     return intersects_by_volume
 
+input_boundaries = get_boundary(input)
+input_volume = (
+    (input_boundaries[1]-input_boundaries[0]+1)
+    *(input_boundaries[3]-input_boundaries[2]+1)
+    *(input_boundaries[5]-input_boundaries[4]+1)
+)
+print(f"expected volume: {input_volume}")
 for i in [1_000_000_000, 100_000_000, 10_000_000, 1_000_000, 100_000, 10_000, 1_000, 100]:
     start = current_time()
     input_intersects_by_volume = partition_count(input,i)
@@ -394,11 +400,6 @@ for i in [1_000_000_000, 100_000_000, 10_000_000, 1_000_000, 100_000, 10_000, 1_
     print(f"min_vol={i} {end-start} secs")
 
     print("\n".join(map( lambda t: str(t), input_intersects_by_volume.items())))
-    input_boundaries = get_boundary(input)
-    input_volume = (
-        (input_boundaries[1]-input_boundaries[0])
-        *(input_boundaries[3]-input_boundaries[2])
-        *(input_boundaries[5]-input_boundaries[4])
-    )
+
     print(f"expected volume: {input_volume}")
     print(f"actual   volume: {sum(input_intersects_by_volume.values())}")

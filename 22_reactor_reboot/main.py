@@ -8,6 +8,7 @@ import copy
 from collections import deque
 from typing import OrderedDict
 import math
+from time import time as current_time
 
 # on x=10..12,y=10..12,z=10..12
 # off x=9..11,y=9..11,z=9..11
@@ -310,4 +311,94 @@ print()
 # (9, 155444)
 # (10, 5857)
 # (11, 53)
-print("\n".join(map( lambda t: str(t), count_steps_in_cubes(sample_even_larger,500).items())))
+#print("\n".join(map( lambda t: str(t), count_steps_in_cubes(sample_even_larger,500).items())))
+
+# Lets see if I can partition the space until there are 3 intersecting cubes
+
+
+def partition_count_impl(steps, x1, x2, y1, y2, z1, z2, intersects_by_volume, min_vol=1):
+    intersect_count = 0
+    for step in steps:
+        if is_intersecting(step, (0, x1, x2, y1, y2, z1, z2)):
+            intersect_count += 1
+    
+    volume = (x2-x1) * (y2-y1) * (z2-z1)
+    if intersect_count <= 3 or volume <= min_vol:
+        intersects_by_volume[intersect_count] = intersects_by_volume.get(intersect_count, 0) + volume
+    else:
+        print(volume)
+        # x1=10, x2=13, y1=10,y2=13
+        # 10 11 12 13
+        # 11  a  a  a
+        # 12  a  a  a
+        # 13  a  a  a
+        # expected:
+        #    x1 x2  y1 y2
+        # 1. 10,11  10,11  
+        # 2. 10,11  12,13 
+        # 3. 12,13  10,11
+        # 4. 12,13  12,13
+        # x_delta = (13-10)/2 = 3/2 = 1
+        # x_mid = x_delta + 10 = 11
+        # y_mid = y_delta + 10 = 11
+        # (x1, x_mid)     (y1, y_mid)
+        # (x1, x_mid)     (y_mid + 1, y2)
+        # (x_mid +1, x2)  (y1, y_mid)
+        # (x_mid +1, x2)  (y_mid + 1, y2)
+        # check with odd case:
+        # x1=10, x2=12, y1=10, y2=12
+        # 10 11 12
+        # 11  a  a
+        # 12  a  a
+        # Expected:
+        # 1. 10,11 10,11
+        # 2. 10,11 12,12
+        # 3. 12,12 10,11
+        # 4. 12,12 12,12
+        # Actual:
+        # x_delta = (12-10)/2 = 2/2 = 1
+        # x_mid = x_delta + 10 = 11
+        # y_mix = 11
+        # 10, 11   10,11
+        # 10, 11   12,12
+        # 12, 12   10,11
+        # 12, 12   12,12
+        x_delta = (x2-x1)/2
+        y_delta = (y2-y1)/2
+        z_delta = (z2-z1)/2
+        x_mid = x_delta + x1
+        y_mid = y_delta + y1
+        z_mid = z_delta + z1
+        # since we're in 3 dimensions, instead of 4 squares, we have 8 cubes
+        partition_count_impl(steps,      x1, x_mid,      y1, y_mid,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_count_impl(steps,      x1, x_mid,      y1, y_mid, z_mid+1,    z2, intersects_by_volume, min_vol)
+        partition_count_impl(steps,      x1, x_mid, y_mid+1,    y2,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_count_impl(steps,      x1, x_mid, y_mid+1,    y2, z_mid+1,    z2, intersects_by_volume, min_vol)
+        partition_count_impl(steps, x_mid+1,    x2,      y1, y_mid,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_count_impl(steps, x_mid+1,    x2,      y1, y_mid, z_mid+1,    z2, intersects_by_volume, min_vol)
+        partition_count_impl(steps, x_mid+1,    x2, y_mid+1,    y2,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_count_impl(steps, x_mid+1,    x2, y_mid+1,    y2, z_mid+1,    z2, intersects_by_volume, min_vol)
+
+
+
+def partition_count(steps, min_vol=1):
+    min_x, max_x, min_y, max_y, min_z, max_z = get_boundary(steps)
+    intersects_by_volume = {}
+    partition_count_impl(steps, min_x, max_x, min_y, max_y, min_z, max_z, intersects_by_volume, min_vol)
+    return intersects_by_volume
+
+for i in [1_000_000_000, 100_000_000, 10_000_000, 1_000_000, 100_000, 10_000, 1_000, 100]:
+    start = current_time()
+    input_intersects_by_volume = partition_count(input,i)
+    end = current_time()
+    print(f"min_vol={i} {end-start} secs")
+
+    print("\n".join(map( lambda t: str(t), input_intersects_by_volume.items())))
+    input_boundaries = get_boundary(input)
+    input_volume = (
+        (input_boundaries[1]-input_boundaries[0])
+        *(input_boundaries[3]-input_boundaries[2])
+        *(input_boundaries[5]-input_boundaries[4])
+    )
+    print(f"expected volume: {input_volume}")
+    print(f"actual   volume: {sum(input_intersects_by_volume.values())}")

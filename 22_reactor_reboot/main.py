@@ -316,7 +316,7 @@ print()
 # Lets see if I can partition the space until there are 3 intersecting cubes
 
 
-def partition_count_impl(steps, x1, x2, y1, y2, z1, z2, intersects_by_volume, min_vol=1):
+def partition_volume_count_impl(steps, x1, x2, y1, y2, z1, z2, intersects_by_volume, min_vol=1):
     intersect_steps = []
     for step in steps:
         if is_intersecting(step, (0, x1, x2, y1, y2, z1, z2)):
@@ -370,21 +370,21 @@ def partition_count_impl(steps, x1, x2, y1, y2, z1, z2, intersects_by_volume, mi
         y_mid = y_delta + y1
         z_mid = z_delta + z1
         # since we're in 3 dimensions, instead of 4 squares, we have 8 cubes
-        partition_count_impl(intersect_steps,      x1, x_mid,      y1, y_mid,      z1, z_mid, intersects_by_volume, min_vol)
-        partition_count_impl(intersect_steps,      x1, x_mid,      y1, y_mid, z_mid+1,    z2, intersects_by_volume, min_vol)
-        partition_count_impl(intersect_steps,      x1, x_mid, y_mid+1,    y2,      z1, z_mid, intersects_by_volume, min_vol)
-        partition_count_impl(intersect_steps,      x1, x_mid, y_mid+1,    y2, z_mid+1,    z2, intersects_by_volume, min_vol)
-        partition_count_impl(intersect_steps, x_mid+1,    x2,      y1, y_mid,      z1, z_mid, intersects_by_volume, min_vol)
-        partition_count_impl(intersect_steps, x_mid+1,    x2,      y1, y_mid, z_mid+1,    z2, intersects_by_volume, min_vol)
-        partition_count_impl(intersect_steps, x_mid+1,    x2, y_mid+1,    y2,      z1, z_mid, intersects_by_volume, min_vol)
-        partition_count_impl(intersect_steps, x_mid+1,    x2, y_mid+1,    y2, z_mid+1,    z2, intersects_by_volume, min_vol)
+        partition_volume_count_impl(intersect_steps,      x1, x_mid,      y1, y_mid,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_volume_count_impl(intersect_steps,      x1, x_mid,      y1, y_mid, z_mid+1,    z2, intersects_by_volume, min_vol)
+        partition_volume_count_impl(intersect_steps,      x1, x_mid, y_mid+1,    y2,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_volume_count_impl(intersect_steps,      x1, x_mid, y_mid+1,    y2, z_mid+1,    z2, intersects_by_volume, min_vol)
+        partition_volume_count_impl(intersect_steps, x_mid+1,    x2,      y1, y_mid,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_volume_count_impl(intersect_steps, x_mid+1,    x2,      y1, y_mid, z_mid+1,    z2, intersects_by_volume, min_vol)
+        partition_volume_count_impl(intersect_steps, x_mid+1,    x2, y_mid+1,    y2,      z1, z_mid, intersects_by_volume, min_vol)
+        partition_volume_count_impl(intersect_steps, x_mid+1,    x2, y_mid+1,    y2, z_mid+1,    z2, intersects_by_volume, min_vol)
 
 
 
-def partition_count(steps, min_vol=1):
+def partition_volume_count(steps, min_vol=1):
     min_x, max_x, min_y, max_y, min_z, max_z = get_boundary(steps)
     intersects_by_volume = {}
-    partition_count_impl(steps, min_x, max_x, min_y, max_y, min_z, max_z, intersects_by_volume, min_vol)
+    partition_volume_count_impl(steps, min_x, max_x, min_y, max_y, min_z, max_z, intersects_by_volume, min_vol)
     return intersects_by_volume
 
 input_boundaries = get_boundary(input)
@@ -393,10 +393,11 @@ input_volume = (
     *(input_boundaries[3]-input_boundaries[2]+1)
     *(input_boundaries[5]-input_boundaries[4]+1)
 )
-print(f"expected volume: {input_volume}")
-for i in [1_000_000_000, 100_000_000, 10_000_000, 1_000_000, 100_000, 10_000, 1_000, 100]:
+# print(f"expected volume: {input_volume}")
+#for i in [1_000_000_000, 100_000_000, 10_000_000, 1_000_000, 100_000, 10_000, 1_000, 100]:
+for i in []:
     start = current_time()
-    input_intersects_by_volume = partition_count(input,i)
+    input_intersects_by_volume = partition_volume_count(input,i)
     end = current_time()
     print(f"min_vol={i} {end-start} secs")
 
@@ -404,3 +405,186 @@ for i in [1_000_000_000, 100_000_000, 10_000_000, 1_000_000, 100_000, 10_000, 1_
 
     print(f"expected volume: {input_volume}")
     print(f"actual   volume: {sum(input_intersects_by_volume.values())}")
+
+# (0, 2361821899010547)
+# (1, 1319546041432069)
+# (2, 1601401737128548)
+# (3, 1702756980717707)
+# (4, 108689905549876)
+# (5, 33791983162659)
+# (6, 9255331271108)
+# (7, 1691441308210)
+# (8, 258161736084)
+# (9, 2767011072)
+# (20, 53157376)
+# expected volume: 7139216301485256
+# actual   volume: 7139216301485256
+# min_vol=10000000 62.282487630844116 secs
+# (0, 2361821958847939)
+# (1, 1319550251677969)
+# (2, 1601770058878041)
+# (3, 1712142841141531)
+# (4, 103106152118389)
+# (5, 31028401994077)
+# (6, 8187063207384)
+# (7, 1398353319210)
+# (8, 210215894924)
+# (9, 997761120)
+# (20, 6644672)
+# expected volume: 7139216301485256
+# actual   volume: 7139216301485256
+# based on the above experiment, I don't think I will find a small enough volume
+# in time to have 3 or fewer intersections.
+# maybe there are more than 3 intersecting at one cube anyways.
+# maybe I can partition until the partition is completely inside
+# that way I don't need to figure out how to calculate the coords of intersection
+
+def is_a_within_b(step_a, step_b):
+    _, a_x1, a_x2, a_y1, a_y2, a_z1, a_z2 = step_a
+    _, b_x1, b_x2, b_y1, b_y2, b_z1, b_z2 = step_b
+
+    return (
+            a_x1 >= b_x1
+        and a_x2 <= b_x2
+        and a_y1 >= b_y1
+        and a_y2 <= b_y2
+        and a_z1 >= b_z1
+        and a_z2 <= b_z2
+    )
+
+def track_volume_stats(volume_tracker, volume):
+    """
+    volume_tracker = [
+        0,               # 0 volume explored so far
+        total_volume,    # 1 total volume to explore
+        current_time(),  # 2 time since start
+        0,               # 3 last percentage we gave an update
+        0.1,             # 4 next percentage where we give an update
+        current_time()   # 5 time since last update
+    ]
+    """
+    volume_tracker[0] += volume
+    percent = volume_tracker[0] / volume_tracker[1] * 100
+    if percent > volume_tracker[4]:
+        next_time = current_time()
+        estimated_time_left = (current_time()-volume_tracker[2])*(100-percent)/percent
+        print(f"from {volume_tracker[3]}% until {percent}% took {next_time-volume_tracker[5]} secs. estimated time left {estimated_time_left} secs")
+        volume_tracker[5] = next_time
+        volume_tracker[4] = percent + 0.1
+        volume_tracker[3] = percent
+
+
+def on_count_by_partition(steps, x1, x2, y1, y2, z1, z2, volume_tracker):
+    intersect_steps = []
+    boundary_step = (0, x1, x2, y1, y2, z1, z2)
+    for step in steps:
+        if is_intersecting(step, boundary_step):
+            intersect_steps.append(step)
+    
+    intersect_count = len(intersect_steps)
+    volume = (x2-x1+1) * (y2-y1+1) * (z2-z1+1)
+    if intersect_count == 0:
+        track_volume_stats(volume_tracker, volume)
+        return 0
+
+    all_within = True
+    for step in intersect_steps:
+        if not is_a_within_b(boundary_step, step):
+            all_within = False
+    
+    if all_within:
+        track_volume_stats(volume_tracker, volume)
+        if intersect_steps[len(intersect_steps)-1][0] == 'on':
+            return volume
+        else:
+            return 0
+
+    # x1=10, x2=13, y1=10,y2=13
+    # 10 11 12 13
+    # 11  a  a  a
+    # 12  a  a  a
+    # 13  a  a  a
+    # expected:
+    #    x1 x2  y1 y2
+    # 1. 10,11  10,11  
+    # 2. 10,11  12,13 
+    # 3. 12,13  10,11
+    # 4. 12,13  12,13
+    # x_delta = (13-10)/2 = 3/2 = 1
+    # x_mid = x_delta + 10 = 11
+    # y_mid = y_delta + 10 = 11
+    # (x1, x_mid)     (y1, y_mid)
+    # (x1, x_mid)     (y_mid + 1, y2)
+    # (x_mid +1, x2)  (y1, y_mid)
+    # (x_mid +1, x2)  (y_mid + 1, y2)
+    # check with odd case:
+    # x1=10, x2=12, y1=10, y2=12
+    # 10 11 12
+    # 11  a  a
+    # 12  a  a
+    # Expected:
+    # 1. 10,11 10,11
+    # 2. 10,11 12,12
+    # 3. 12,12 10,11
+    # 4. 12,12 12,12
+    # Actual:
+    # x_delta = (12-10)/2 = 2/2 = 1
+    # x_mid = x_delta + 10 = 11
+    # y_mix = 11
+    # 10, 11   10,11
+    # 10, 11   12,12
+    # 12, 12   10,11
+    # 12, 12   12,12
+    x_delta = (x2-x1)//2
+    y_delta = (y2-y1)//2
+    z_delta = (z2-z1)//2
+    x_mid = x_delta + x1
+    y_mid = y_delta + y1
+    z_mid = z_delta + z1
+    # since we're in 3 dimensions, instead of 4 squares, we have 8 cubes
+    return (on_count_by_partition(intersect_steps,      x1, x_mid,      y1, y_mid,      z1, z_mid, volume_tracker)
+          + on_count_by_partition(intersect_steps,      x1, x_mid,      y1, y_mid, z_mid+1,    z2, volume_tracker)
+          + on_count_by_partition(intersect_steps,      x1, x_mid, y_mid+1,    y2,      z1, z_mid, volume_tracker)
+          + on_count_by_partition(intersect_steps,      x1, x_mid, y_mid+1,    y2, z_mid+1,    z2, volume_tracker)
+          + on_count_by_partition(intersect_steps, x_mid+1,    x2,      y1, y_mid,      z1, z_mid, volume_tracker)
+          + on_count_by_partition(intersect_steps, x_mid+1,    x2,      y1, y_mid, z_mid+1,    z2, volume_tracker)
+          + on_count_by_partition(intersect_steps, x_mid+1,    x2, y_mid+1,    y2,      z1, z_mid, volume_tracker)
+          + on_count_by_partition(intersect_steps, x_mid+1,    x2, y_mid+1,    y2, z_mid+1,    z2, volume_tracker)
+    )
+
+def on_count(steps):
+    min_x, max_x, min_y, max_y, min_z, max_z = get_boundary(steps)
+    total_volume = (
+        (input_boundaries[1]-input_boundaries[0]+1)
+        *(input_boundaries[3]-input_boundaries[2]+1)
+        *(input_boundaries[5]-input_boundaries[4]+1)
+    )
+    volume_tracker = [
+        0,               # volume explored so far
+        total_volume,    # total volume to explore
+        current_time(),  # time since start
+        0,               # last percentage we gave an update
+        0.1,             # next percentage where we give an update
+        current_time()   # time since last update
+    ]
+    on_volume = on_count_by_partition(steps, min_x, max_x, min_y, max_y, min_z, max_z, volume_tracker)
+    print(f"total volume explored: {volume_tracker[0]}")
+    print(f"expected volume:       {total_volume}")
+    return on_volume
+
+"""
+print(f"expected: {2758514936282235}")
+start = current_time()
+on_volume = on_count(sample_even_larger)
+end = current_time()
+print(f"actual: {on_volume}")
+print(f"{end-start} secs")
+"""
+
+print("input:")
+
+start = current_time()
+on_volume = on_count(input)
+end = current_time()
+print(on_volume)
+print(f"{end-start} secs")

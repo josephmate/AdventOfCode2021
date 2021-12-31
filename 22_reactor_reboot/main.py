@@ -579,12 +579,90 @@ on_volume = on_count(sample_even_larger)
 end = current_time()
 print(f"actual: {on_volume}")
 print(f"{end-start} secs")
-"""
+
 
 print("input:")
-
 start = current_time()
 on_volume = on_count(input)
 end = current_time()
 print(on_volume)
 print(f"{end-start} secs")
+"""
+
+# The above solution was too slow to run overnight, so I'm moving on.
+# Next I want to see if I can take a cube and split it with the
+# intersecting cubes after it.
+# By the end we should have something like O((9N)^2) cubes, which is okay since
+# the input only as about ~400 cubes.
+# The only hard part it to figure out how to split the cubes.
+# Pseudocode:
+# let split_cubes = []
+# for each cube in cubes:
+#  for each intersecting_cube in split_cubes intersecting with cube:
+#    remove intersecting_cube
+#    split intersecting_cube based on cube
+#    add the split back in
+#  add cube into split_cubes
+# now split_cubes only contains cubes that 100% overlap????
+#   I'm not sure if this is true yet.
+#   If the split cube is smaller than the cube, then the split cube won't
+#   intersect. Then maybe we need to also split the cube as well?
+# now split cubes only contains cube that 100% overlap
+# so we can group them by coordinates
+# check if the last one is on/off
+# if it's on, add that to the volume
+#
+# now the hard part is to figure out how to split these cubes based on eachother
+"""
+ooooo
+o   o
+o xxoxx
+o x o x
+ooooo x
+  x   X
+  xxxxx
+When we split, we want only rectangles after we're done.
+I think the easiest want to split would end up like this:
+11333
+11333
+2244455
+2244455
+2244455
+  66777
+  66777
+
+It looks like the cubes need to be split using the 'lines' x1, x2, y1, y2:
+   x x x x
+   1 1 2 2
+   a b a b
+   | | | |
+   | | | |
+---ooooo-+----y2a
+   o   o |
+---o xxoxx----y2b
+   o x o x
+---ooooo x----y1a
+     x   x
+-----xxxxx----y1b
+
+Lets try a weird case where one corner is not within the other:
+        ooooo
+        o   o
+     xxxoxxxoxxx
+     x  o   o  x
+     xxxoxxxoxxx
+        o   o
+        ooooo
+
+        11111
+        11111
+     33344444555
+     33344444555
+     33344444555
+        22222
+        22222
+It looks like it could work, but I'm not sure how to translate
+this into code yet.
+I also don't know how this translates to 3d yet.
+
+"""

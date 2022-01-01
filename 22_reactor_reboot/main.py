@@ -589,6 +589,14 @@ print(on_volume)
 print(f"{end-start} secs")
 """
 
+"""
+
+ ------------------
+/                  \
+|   Failure        |
+\                  /
+ ------------------
+
 # The above solution was too slow to run overnight, so I'm moving on.
 # Next I want to see if I can take a cube and split it with the
 # intersecting cubes after it.
@@ -611,9 +619,16 @@ print(f"{end-start} secs")
 # so we can group them by coordinates
 # check if the last one is on/off
 # if it's on, add that to the volume
-#
-# now the hard part is to figure out how to split these cubes based on eachother
-"""
+
+ ------------------
+/                  \
+|  Splitting Cubes |
+\                  /
+ ------------------
+
+
+now the hard part is to figure out how to split these cubes based on eachother
+
 ooooo
 o   o
 o xxoxx
@@ -664,5 +679,146 @@ Lets try a weird case where one corner is not within the other:
 It looks like it could work, but I'm not sure how to translate
 this into code yet.
 I also don't know how this translates to 3d yet.
+
+Another way I can think of is to start with the intersection,
+then consider the the rectangular prism
+above, below, forward, back, left right:
+
+ooooo
+o   o
+o xxoxx
+o x o x
+ooooo x
+  x   X
+  xxxxx
+
+but that is not enough because up and left in the above example overlap.
+So I think we need to consider the pairs:
+2D
+left up       up       right up
+left     intersection  right
+leff down     down     right down
+
+3D
+            | /
+            |/
+       -----+------
+           /|
+          / |
+
+     --------
+    /      / |
+   /------/  |
+   |      |  |
+   |      | /
+   |      |/
+    ------/
+
+looks like it would be a cross product of
+up/down/none, left/right/none, forward/back/none
+producing 27 squares
+but none,none,none is the intersection so 26
+
+but then I was think we could simplify this by
+carefully handling the overlap:
+
+back to 2d
+
+ooooo
+o   o
+o xxoxx
+o x o x
+ooooo x
+  x   X
+  xxxxx
+
+above the top of the intersection
+below the bottom of the intersection
+to the left of the intersection and below the top and above the bottom of the intersection
+to the right of the intersection and below the top and above the bottom of the intersection
+that reduces the number of rectangles we produce
+
+in 3D it would be
+
+     --------
+    /      / |
+   /------/  |
+   |      |  |
+   |      | /
+   |      |/
+    ------/
+
+above the intersection
+below the intersection
+to the left  and below the top of the intersection
+             and above the bottom of the instersection
+to the right and below the top of the intersection
+             and above the bottom of the instersection
+forward      and below the top of the intersection
+             and above the bottom of the instersection
+             and to the right of the left of the intersection
+             and to the left of the right of the intersection
+backwards    and below the top of the intersection
+             and above the bottom of the instersection
+             and to the right of the left of the intersection
+             and to the left of the right of the intersection
+
+but how do these restrictions translate to code?
+
+
+
+
+ ------------------
+/                  \
+|   Intersection   |
+\                  /
+ ------------------
+
+the last piece is calculating the intersection.
+Let's try the 2D case first:
+  0123456789 -> y
+0 ooooo
+1 o   o
+2 o xxoxx
+3 o x o x
+4 ooooo x
+5   x   X
+6   xxxxx
+|
+v
+x
+Expected is x=(2,4) y=(2,4)
+
+x1 = max(x1a, x1b) = max(0,2) = 2
+x2 = min(x2a, x2b) = min(4,6) = 4
+y1 = max(y1a, y1b) = max(0,2) = 2
+y2 = min(y2a, y2b) = min(4,6) = 4
+
+let's check what happens if they don't intersect:
+  0123456
+0 ooo xxx
+1 o o x x
+2 ooo xxx
+Expected: something indicating no intersection
+
+x1 = max(0,0) = 0
+x2 = min(2,2) = 2
+y1 = max(0,4) = 4
+y2 = min(2,6) = 2
+
+y1 > y2, which is not allowed, our rectangles are always
+defined by x1 <= x2; y1 <= y2
+
+so if x1 > x2 or y1 > y2 or z1 > z2, then there is no intersection
+
+So for 3D the intersection should be:
+x1 = max(x1a, x1b)
+x2 = min(x2a, x2b)
+y1 = max(y1a, y1b)
+y2 = min(y2a, y2b)
+z1 = max(z1a, z1b)
+z2 = min(z2a, z2b)
+
+x1 <= x2 and y1 <= y2 and z1 <= z2
 
 """

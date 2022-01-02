@@ -1094,35 +1094,43 @@ def split_cubes(step_a, step_b):
 def on_count_by_splitting(steps):
     to_process = deque(steps)
     processed = deque()
-
     # split all the cubes so there is
     # no more overlap
     while len(to_process) > 0:
         next_step = to_process.popleft()
-        print(f"next_step={next_step}")
+        #print(f"next_step={next_step}")
         processing = processed
         processed = deque()
         while len(processing) > 0:
             processed_step = processing.popleft()
-            print(f"    processed_step={processed_step}")
+            #print(f"    processed_step={processed_step}")
             if is_intersecting(processed_step, next_step):
                 (intersecting, proccessed_split, next_split) = split_cubes(processed_step, next_step)
-                print(f"    intersected")
-                print(f"        {intersecting}")
-                print(f"        {proccessed_split}")
-                print(f"        {next_split}")
+                #print(f"    intersected")
+                #print(f"        {intersecting}")
+                #print(f"        {proccessed_split}")
+                #print(f"        {next_split}")
                 next_step = intersecting
                 processed.extend(proccessed_split)
                 to_process.extendleft(next_split)
             else:
                 processed.append(processed_step)
-        
         processed.append(next_step)
 
-    print()
-    "\n".join(map(lambda s: str(s), list(processed)))
-    print()
 
+    processed = list(processed)
+    #print(processed)
+    #print()
+    volume = 0
+    for step in processed:
+        #print(step)
+        #print(type(step))
+        #print(type(step[0]))
+        if step[0] == True:
+            volume += (step[2] - step[1] + 1) * (step[4] - step[3] + 1) * (step[6] - step[5] + 1)
+
+    #print()
+    return volume
     return sum(
         map(lambda step: (step[2] - step[1]) * (step[4] - step[3]) * (step[6] - step[5]),
         filter(lambda step: step[0] == True,
@@ -1137,26 +1145,24 @@ end = current_time()
 print(f"actual:   {on_volume}")
 print(f"{end-start} secs")
 
-"""
+
 print(f"expected: {590784}")
 start = current_time()
 on_volume = on_count_by_splitting(filter_steps(sample_large))
 end = current_time()
 print(f"actual:   {on_volume}")
 print(f"{end-start} secs")
-
+print()
 print(f"expected: {2758514936282235}")
 start = current_time()
 on_volume = on_count_by_splitting(sample_even_larger)
 end = current_time()
 print(f"actual:   {on_volume}")
 print(f"{end-start} secs")
-
-
+print()
 print(f"input:")
 start = current_time()
 on_volume = on_count_by_splitting(input)
 end = current_time()
 print(f"actual:   {on_volume}")
 print(f"{end-start} secs")
-"""

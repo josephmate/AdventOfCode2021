@@ -1048,7 +1048,7 @@ def split_by_intersection(intersection, step):
     #             and to the left of the right of the intersection
     forward = (
         is_on,
-        i_x1 + 1,
+        i_x2 + 1,
         s_x2,
         max(s_y1, i_y1), # we cannot go below the intersection
         min(s_y2, i_y2), # we cannot go above the intersection

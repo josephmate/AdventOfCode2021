@@ -32,10 +32,10 @@ sample_large = parse_file('sample_large.txt')
 sample_even_larger = parse_file('sample_even_larger.txt')
 input = parse_file('input.txt')
 
-def solve_small(steps):
-    on_cubes = set()
-
-    for is_on, x1, x2, y1, y2, z1, z2 in steps:
+def filter_steps(steps):
+    filtered_steps = []
+    for step in steps:
+        is_on, x1, x2, y1, y2, z1, z2 = step
         if (
             x1 >= -50 and x1 <= 50 and
             x2 >= -50 and x2 <= 50 and
@@ -44,13 +44,20 @@ def solve_small(steps):
             z1 >= -50 and z1 <= 50 and
             z2 >= -50 and z2 <= 50
         ):
-            for x in range(x1, x2+1):
-                for y in range(y1, y2+1):
-                    for z in range(z1, z2+1):
-                        if is_on:
-                            on_cubes.add((x,y,z))
-                        elif (x,y,z) in on_cubes:
-                            on_cubes.remove((x,y,z))
+            filtered_steps.append(step)
+    return filtered_steps
+
+def solve_small(steps):
+    on_cubes = set()
+
+    for is_on, x1, x2, y1, y2, z1, z2 in filter_steps(steps):
+        for x in range(x1, x2+1):
+            for y in range(y1, y2+1):
+                for z in range(z1, z2+1):
+                    if is_on:
+                        on_cubes.add((x,y,z))
+                    elif (x,y,z) in on_cubes:
+                        on_cubes.remove((x,y,z))
 
     return len(on_cubes)
 
@@ -1082,3 +1089,74 @@ def split_cubes(step_a, step_b):
         split_by_intersection(intersection, step_a), # step_a split
         split_by_intersection(intersection, step_b), # step_b split
     )
+
+
+def on_count_by_splitting(steps):
+    to_process = deque(steps)
+    processed = deque()
+
+    # split all the cubes so there is
+    # no more overlap
+    while len(to_process) > 0:
+        next_step = to_process.popleft()
+        print(f"next_step={next_step}")
+        processing = processed
+        processed = deque()
+        while len(processing) > 0:
+            processed_step = processing.popleft()
+            print(f"    processed_step={processed_step}")
+            if is_intersecting(processed_step, next_step):
+                (intersecting, proccessed_split, next_split) = split_cubes(processed_step, next_step)
+                print(f"    intersected")
+                print(f"        {intersecting}")
+                print(f"        {proccessed_split}")
+                print(f"        {next_split}")
+                next_step = intersecting
+                processed.extend(proccessed_split)
+                to_process.extendleft(next_split)
+            else:
+                processed.append(processed_step)
+        
+        processed.append(next_step)
+
+    print()
+    "\n".join(map(lambda s: str(s), list(processed)))
+    print()
+
+    return sum(
+        map(lambda step: (step[2] - step[1]) * (step[4] - step[3]) * (step[6] - step[5]),
+        filter(lambda step: step[0] == True,
+        processed
+        )))
+
+
+print(f"expected: {39}")
+start = current_time()
+on_volume = on_count_by_splitting(filter_steps(sample_small))
+end = current_time()
+print(f"actual:   {on_volume}")
+print(f"{end-start} secs")
+
+"""
+print(f"expected: {590784}")
+start = current_time()
+on_volume = on_count_by_splitting(filter_steps(sample_large))
+end = current_time()
+print(f"actual:   {on_volume}")
+print(f"{end-start} secs")
+
+print(f"expected: {2758514936282235}")
+start = current_time()
+on_volume = on_count_by_splitting(sample_even_larger)
+end = current_time()
+print(f"actual:   {on_volume}")
+print(f"{end-start} secs")
+
+
+print(f"input:")
+start = current_time()
+on_volume = on_count_by_splitting(input)
+end = current_time()
+print(f"actual:   {on_volume}")
+print(f"{end-start} secs")
+"""

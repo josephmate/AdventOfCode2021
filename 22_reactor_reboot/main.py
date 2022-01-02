@@ -698,6 +698,84 @@ print(f"{end-start} secs")
 
  ------------------
 |                  |
+|   Intersection   |
+|                  |
+ ------------------
+
+the last piece is calculating the intersection.
+Let's try the 2D case first:
+  0123456789 -> y
+0 ooooo
+1 o   o
+2 o xxoxx
+3 o x o x
+4 ooooo x
+5   x   X
+6   xxxxx
+|
+v
+x
+Expected is x=(2,4) y=(2,4)
+
+x1 = max(x1a, x1b) = max(0,2) = 2
+x2 = min(x2a, x2b) = min(4,6) = 4
+y1 = max(y1a, y1b) = max(0,2) = 2
+y2 = min(y2a, y2b) = min(4,6) = 4
+
+let's check what happens if they don't intersect:
+  0123456
+0 ooo xxx
+1 o o x x
+2 ooo xxx
+Expected: something indicating no intersection
+
+x1 = max(0,0) = 0
+x2 = min(2,2) = 2
+y1 = max(0,4) = 4
+y2 = min(2,6) = 2
+
+y1 > y2, which is not allowed, our rectangles are always
+defined by x1 <= x2; y1 <= y2
+
+so if x1 > x2 or y1 > y2 or z1 > z2, then there is no intersection
+
+So for 3D the intersection should be:
+x1 = max(x1a, x1b)
+x2 = min(x2a, x2b)
+y1 = max(y1a, y1b)
+y2 = min(y2a, y2b)
+z1 = max(z1a, z1b)
+z2 = min(z2a, z2b)
+
+x1 <= x2 and y1 <= y2 and z1 <= z2
+
+"""
+def get_intersection(step_a, step_b):
+    _,         a_x1, a_x2, a_y1, a_y2, a_z1, a_z2 = step_a
+    is_on_off, b_x1, b_x2, b_y1, b_y2, b_z1, b_z2 = step_b
+
+    x1 = max(a_x1, b_x1)
+    x2 = min(a_x2, b_x2)
+    y1 = max(a_y1, b_y1)
+    y2 = min(a_y2, b_y2)
+    z1 = max(a_z1, b_z1)
+    z2 = min(a_z2, b_z2)
+
+    # there is no intersection in these cases
+    # we must have x1 <= x2; y1 <= y2; z1 <= z2
+    # for there to be an intersection
+    if x1 > x2:
+        return None
+    if y1 > y2:
+        return None
+    if z1 > z2:
+        return None
+
+    return (is_on_off, x1, x2, y1, y2, z1, z2)
+
+"""
+ ------------------
+|                  |
 |  Splitting Cubes |
 |                  |
  ------------------
@@ -856,85 +934,151 @@ below the intersection
     y2 = intersection's y1
     y1 = y1 of shape
     x1,x2,z1,z2 stay the same
-to the left  and below the top of the intersection
-TODO
 
+to the left  and below the top of the intersection and above the bottom of the intersection
+z2 = intersection's z1 - 1
+z1 remains the same
+x1,x2 remain the same
+need to collapse the y's since we already have cubes for them
+y1 = max(y1, intersection's y1) # we cannot go below the intersection
+    no need to add/subtract because the above/below had to remove it
+    so we wouldn't double count the intersection
+y2 = min(y2, intersection's y2) # we cannot go above the intersection
+    no need to add/subtract because the above/below had to remove it
+    so we wouldn't double count the intersection
+similar for to the right
 
- ------------------
-|                  |
-|   Intersection   |
-|                  |
- ------------------
+U = up    D = down    I = intersection
+back  forward
+<--   -->   ^
+UUUUUUUUU   | up
+   IIIFFF   
+   IIIFFF
+   IIIFFF   | down
+DDDDDDDDD   v
+rotate around the x axis (forward/back axis)
 
-the last piece is calculating the intersection.
-Let's try the 2D case first:
-  0123456789 -> y
-0 ooooo
-1 o   o
-2 o xxoxx
-3 o x o x
-4 ooooo x
-5   x   X
-6   xxxxx
-|
-v
-x
-Expected is x=(2,4) y=(2,4)
+<--   -->   ^
+RRRRRRRRR   | right
+   IIIFFF   
+   IIIFFF
+   IIIFFF   | left
+LLLLLLLLL   v
 
-x1 = max(x1a, x1b) = max(0,2) = 2
-x2 = min(x2a, x2b) = min(4,6) = 4
-y1 = max(y1a, y1b) = max(0,2) = 2
-y2 = min(y2a, y2b) = min(4,6) = 4
+so we don't need to add/subtract like we need
+to for the edge that touches the intersection
+it's also not touching the already split cubes
+as we can see from the above two diagrams
 
-let's check what happens if they don't intersect:
-  0123456
-0 ooo xxx
-1 o o x x
-2 ooo xxx
-Expected: something indicating no intersection
-
-x1 = max(0,0) = 0
-x2 = min(2,2) = 2
-y1 = max(0,4) = 4
-y2 = min(2,6) = 2
-
-y1 > y2, which is not allowed, our rectangles are always
-defined by x1 <= x2; y1 <= y2
-
-so if x1 > x2 or y1 > y2 or z1 > z2, then there is no intersection
-
-So for 3D the intersection should be:
-x1 = max(x1a, x1b)
-x2 = min(x2a, x2b)
-y1 = max(y1a, y1b)
-y2 = min(y2a, y2b)
-z1 = max(z1a, z1b)
-z2 = min(z2a, z2b)
-
-x1 <= x2 and y1 <= y2 and z1 <= z2
-
+forwards
+x1 = intersection's x2 + 1
+x2 stays the same
+y1 = max(y1, intersection's y1)
+y2 = min(y2, intersection's y2)
+z1 = max(z1, intersection's z1)
+z2 = min(z2, intersection's z2)
+similar for backwards
 """
+def is_valid(step):
+    _, x1, x2, y1, y2, z1, z2 = step
+    return (
+            x1 <= x2
+        and y1 <= y2
+        and z1 <= z2
+    )
 
+def split_by_intersection(intersection, step):
+    _,     i_x1, i_x2, i_y1, i_y2, i_z1, i_z2 = intersection
+    is_on, s_x1, s_x2, s_y1, s_y2, s_z1, s_z2 = step
+    result = []
 
-def get_intersection(step_a, step_b):
-    _,         a_x1, a_x2, a_y1, a_y2, a_z1, a_z2 = step_a
-    is_on_off, b_x1, b_x2, b_y1, b_y2, b_z1, b_z2 = step_b
+    above = (
+        is_on,
+        s_x1,
+        s_x2,
+        i_y2 + 1, # y1 = intersection's y2. add 1 since we're integer cubes
+        s_y2,
+        s_z1,
+        s_z2,
+    )
+    if is_valid(above):
+        result.append(above)
 
-    x1 = max(a_x1, b_x1)
-    x2 = min(a_x2, b_x2)
-    y1 = max(a_y1, b_y1)
-    y2 = min(a_y2, b_y2)
-    z1 = max(a_z1, b_z1)
-    z2 = min(a_z2, b_z2)
+    below = (
+        is_on,
+        s_x1,
+        s_x2,
+        s_y1,
+        i_y1 - 1, # y2 = intersection's y1. subtract 1 since integer cubes
+        s_z1,
+        s_z2,
+    )
+    if is_valid(below):
+        result.append(below)
 
-    # there is no intersection in these cases
-    # we must have x1 <= x2; y1 <= y2; z1 <= z2
-    # for there to be an intersection
-    if x1 > x2:
-        return None
-    if y1 > y2:
-        return None
-    if z1 > z2:
-        return None
+    left = (
+        is_on,
+        s_x1,
+        s_x2,
+        max(s_y1, i_y1), # we cannot go below the intersection
+        min(s_y2, i_y2), # we cannot go above the intersection
+        s_z1,
+        i_z1 - 1, # z2 = intersection's z1 - 1
+    )
+    if is_valid(left):
+        result.append(left)
 
-    return (is_on_off, x1, x2, y1, y2, z1, z2)
+    # to the right and below the top of the intersection
+    #             and above the bottom of the instersection
+    right = (
+        is_on,
+        s_x1,
+        s_x2,
+        max(s_y1, i_y1), # we cannot go below the intersection
+        min(s_y2, i_y2), # we cannot go above the intersection
+        i_z2+1,
+        s_z2,
+    )
+    if is_valid(right):
+        result.append(right)
+
+    # forward      and below the top of the intersection
+    #             and above the bottom of the instersection
+    #             and to the right of the left of the intersection
+    #             and to the left of the right of the intersection
+    forward = (
+        is_on,
+        i_x1 + 1,
+        s_x2,
+        max(s_y1, i_y1), # we cannot go below the intersection
+        min(s_y2, i_y2), # we cannot go above the intersection
+        max(s_z1, i_z1),
+        min(s_z2, i_z2),
+    )
+    if is_valid(forward):
+        result.append(forward)
+    # backwards    and below the top of the intersection
+    #             and above the bottom of the instersection
+    #             and to the right of the left of the intersection
+    #             and to the left of the right of the intersection
+    backwards = (
+        is_on,
+        s_x1,
+        i_x1 - 1,
+        max(s_y1, i_y1), # we cannot go below the intersection
+        min(s_y2, i_y2), # we cannot go above the intersection
+        max(s_z1, i_z1),
+        min(s_z2, i_z2),
+    )
+    if is_valid(backwards):
+        result.append(backwards)
+    return result
+
+def split_cubes(step_a, step_b):
+    intersection = get_intersection(step_a, step_b)
+
+    return (
+        intersection,
+        split_by_intersection(intersection, step_a), # step_a split
+        split_by_intersection(intersection, step_b), # step_b split
+    )
